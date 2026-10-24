@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/errors.dart';
+import '../../core/supabase.dart';
 import '../../core/widgets.dart';
 import '../animals/animal.dart';
 import '../animals/animals_repository.dart';
 import '../voice/voice_note.dart';
 import '../voice/voice_recorder_field.dart';
 import 'case_record.dart';
+import 'case_validation.dart';
 import 'cases_repository.dart';
 import 'media_attachments_field.dart';
 
-/// US-03 (written description), US-04 (voice, from the voice feature), US-05 (media) and US-06 (draft).
+/// US-03 (written description), US-04 (voice, from the voice feature), US-05 (media), US-06 (draft)
+/// and US-07 (submit).
 class CaseFormScreen extends StatefulWidget {
   const CaseFormScreen({super.key, this.caseId, this.initialAnimalId});
 
@@ -89,6 +92,49 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
     context.pop(true);
   }
 
+  /// US-07: names every missing item, saves, then sends the case and shows its case number.
+  Future<void> _onSubmit() async {
+    final missing = missingForSubmit(
+      animalId: _animalId,
+      description: _description.text,
+      hasVoice: _voice != null,
+    );
+    if (missing.isNotEmpty) {
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('لا يمكن إرسال الحالة'),
+          content: Text('أكمل ما يلي أولاً:\n• ${missing.join('\n• ')}'),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً'))],
+        ),
+      );
+      return;
+    }
+    final id = await _saveDraft();
+    if (id == null || !mounted) return;
+    setState(() => _busy = true);
+    try {
+      final caseNumber = await db.rpc('submit_case', params: {'p_case': id}) as String;
+      if (!mounted) return;
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          icon: const Icon(Icons.check_circle, size: 48),
+          title: const Text('تم إرسال الحالة'),
+          content: Text('رقم الحالة: $caseNumber\nيمكنك الآن حجز موعد مع طبيب بيطري.'),
+          actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً'))],
+        ),
+      );
+      if (mounted) context.pop(true);
+    } catch (e) {
+      if (mounted) {
+        showSnack(context, friendlyError(e, {'missing_description': 'أضف وصفاً مكتوباً أو صوتياً قبل الإرسال.'}), error: true);
+      }
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   void dispose() {
     _description.dispose();
@@ -138,6 +184,12 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
           const SectionTitle('صور وفيديو'),
           MediaAttachmentsField(items: _media, onChanged: (m) => setState(() => _media = m)),
           const SizedBox(height: 28),
+          FilledButton.icon(
+            onPressed: _busy ? null : _onSubmit,
+            icon: const Icon(Icons.send),
+            label: const Text('إرسال الحالة'),
+          ),
+          const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: _busy ? null : _onSaveDraft,
             icon: const Icon(Icons.save_outlined),
