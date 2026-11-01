@@ -45,8 +45,22 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
     setState(() => _key = UniqueKey());
   }
 
-  Widget _list(List<OwnerAppointment> items, String empty) => items.isEmpty
-      ? ListView(children: [const SizedBox(height: 80), EmptyState(icon: Icons.event_note, message: empty)])
+  Widget _list(List<OwnerAppointment> items, String empty, {bool findVet = false}) => items.isEmpty
+      ? ListView(children: [
+          const SizedBox(height: 80),
+          EmptyState(
+            icon: Icons.event_note,
+            message: empty,
+            action: findVet
+                ? FilledButton.tonalIcon(
+                    style: tonalButton,
+                    onPressed: () => context.go('/vets'),
+                    icon: const Icon(Icons.medical_services_outlined),
+                    label: const Text('الأطباء'),
+                  )
+                : null,
+          ),
+        ])
       : ListView(padding: pagePadding(context), children: [
           for (final a in items)
             ListCard(
@@ -74,7 +88,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
               final upcoming = all.where((a) => a.isUpcoming).toList();
               final history = all.where((a) => !a.isUpcoming).toList().reversed.toList();
               return TabBarView(children: [
-                _list(upcoming, 'لا توجد مواعيد قادمة.\nاحجز موعداً من صفحة الأطباء.'),
+                _list(upcoming, 'لا توجد مواعيد قادمة.\nاحجز موعداً من صفحة الأطباء.', findVet: true),
                 _list(history, 'لا توجد مواعيد سابقة.'),
               ]);
             },

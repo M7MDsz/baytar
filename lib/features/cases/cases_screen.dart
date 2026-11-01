@@ -31,6 +31,12 @@ class _CasesScreenState extends State<CasesScreen> {
         EmptyState(
           icon: drafts ? Icons.edit_note : Icons.outbox_outlined,
           message: drafts ? 'لا توجد مسودات.' : 'لم ترسل أي حالة بعد.',
+          action: FilledButton.tonalIcon(
+            style: tonalButton,
+            onPressed: () => _open('/cases/new'),
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('حالة جديدة'),
+          ),
         ),
       ]);
     }

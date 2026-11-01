@@ -348,6 +348,17 @@ ThemeData buildTheme() {
       shape: rounded(Radii.tile),
       insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
     ),
+    searchBarTheme: SearchBarThemeData(
+      elevation: const WidgetStatePropertyAll(0),
+      backgroundColor: const WidgetStatePropertyAll(Palette.surface),
+      surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+      side: const WidgetStatePropertyAll(BorderSide(color: Palette.lineStrong)),
+      shape: const WidgetStatePropertyAll(StadiumBorder()),
+      constraints: const BoxConstraints(minHeight: 52),
+      padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 14)),
+      textStyle: WidgetStatePropertyAll(text.bodyLarge!.copyWith(color: Palette.ink)),
+      hintStyle: WidgetStatePropertyAll(text.bodyLarge!.copyWith(color: Palette.muted)),
+    ),
     dividerTheme: const DividerThemeData(color: Palette.line, thickness: 1, space: 1),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: Palette.juniper,

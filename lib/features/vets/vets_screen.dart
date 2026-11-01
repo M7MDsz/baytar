@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/theme.dart';
+import '../../core/catalog.dart';
 import '../../core/widgets.dart';
 import '../notifications/notification_bell.dart';
 import 'vet_card.dart';
@@ -37,33 +38,77 @@ class _VetsScreenState extends State<VetsScreen> {
 
   void _clear() => setState(() {
         _filters = const VetFilters();
+        _query = '';
+        _search.clear();
         _key = UniqueKey();
       });
 
+  // Name or specialty search over the loaded list; the server filters stay in the sheet (US-09).
+  final _search = TextEditingController();
+  String _query = '';
+
+  bool _matches(VetSummary v) {
+    final q = _query.trim();
+    return q.isEmpty || v.fullName.contains(q) || labelList(specialtyLabels, v.specialties).contains(q);
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('الأطباء البيطريون'), actions: [
-          IconButton(
-            tooltip: 'تصفية',
-            onPressed: _openFilters,
-            style: IconButton.styleFrom(
-              backgroundColor: _filters.isEmpty ? Palette.surface : Palette.juniper,
-              foregroundColor: _filters.isEmpty ? Palette.juniper : Colors.white,
-              side: BorderSide(color: _filters.isEmpty ? Palette.lineStrong : Palette.juniper),
+        appBar: AppBar(
+          title: const Text('الأطباء البيطريون'),
+          actions: [
+            IconButton(
+              tooltip: 'تصفية',
+              onPressed: _openFilters,
+              style: IconButton.styleFrom(
+                backgroundColor: _filters.isEmpty ? Palette.surface : Palette.juniper,
+                foregroundColor: _filters.isEmpty ? Palette.juniper : Colors.white,
+                side: BorderSide(color: _filters.isEmpty ? Palette.lineStrong : Palette.juniper),
+              ),
+              icon: Badge(isLabelVisible: !_filters.isEmpty, child: const Icon(Icons.tune)),
             ),
-            icon: Badge(isLabelVisible: !_filters.isEmpty, child: const Icon(Icons.tune)),
+            const SizedBox(width: 4),
+            const NotificationBell(),
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(64),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: SearchBar(
+                controller: _search,
+                hintText: 'ابحث عن طبيب',
+                leading: const Icon(Icons.search_rounded),
+                onChanged: (v) => setState(() => _query = v),
+                trailing: [
+                  if (_query.isNotEmpty)
+                    IconButton(
+                      tooltip: 'مسح',
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () => setState(() {
+                        _search.clear();
+                        _query = '';
+                      }),
+                    ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(width: 4),
-          const NotificationBell(),
-        ]),
+        ),
         body: AsyncView<List<VetSummary>>(
           key: _key,
           load: () => VetsRepository().list(_filters),
-          builder: (context, vets, _) {
+          builder: (context, all, _) {
+            final vets = all.where(_matches).toList();
             if (vets.isEmpty) {
               return ListView(children: [
                 const SizedBox(height: 100),
-                _filters.isEmpty
+                _filters.isEmpty && _query.isEmpty
                     ? const EmptyState(icon: Icons.medical_services_outlined, message: 'لا يوجد طبيب بيطري متاح حالياً.')
                     : EmptyState(
                         icon: Icons.filter_alt_off_outlined,

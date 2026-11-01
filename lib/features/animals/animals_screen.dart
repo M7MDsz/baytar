@@ -35,9 +35,18 @@ class _AnimalsScreenState extends State<AnimalsScreen> {
           key: _listKey,
           load: AnimalsRepository().mine,
           builder: (context, animals, _) => animals.isEmpty
-              ? ListView(children: const [
-                  SizedBox(height: 100),
-                  EmptyState(icon: Icons.pets, message: 'لم تضف أي حيوان بعد.\nابدأ بإضافة ملف لحيوانك.'),
+              ? ListView(children: [
+                  const SizedBox(height: 80),
+                  EmptyState(
+                    icon: Icons.pets,
+                    illustration: const SpeciesCluster(['cat', 'dog', 'camel']),
+                    message: 'لم تضف أي حيوان بعد.\nابدأ بإضافة ملف لحيوانك.',
+                    action: FilledButton.icon(
+                      onPressed: () => _open('/animals/new'),
+                      icon: const Icon(Icons.add_rounded),
+                      label: const Text('إضافة حيوان'),
+                    ),
+                  ),
                 ])
               : ListView(
                   padding: pagePadding(context, bottom: 96),
