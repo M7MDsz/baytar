@@ -6,6 +6,7 @@ import '../../core/catalog.dart';
 import '../../core/formatting.dart';
 import '../../core/widgets.dart';
 import '../booking/booking_screen.dart';
+import 'vet_card.dart';
 import 'vet_summary.dart';
 import 'vets_repository.dart';
 
@@ -32,11 +33,18 @@ class VetProfileScreen extends StatelessWidget {
               Expanded(
                 child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
                   AppCard(
+                    shadow: false,
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
                     child: Column(children: [
-                      DoctorAvatar(v.gender, radius: 48),
+                      Hero(tag: vetAvatarTag(v.id), child: DoctorAvatar(v.gender, radius: 52)),
                       const SizedBox(height: 14),
-                      Text(v.fullName, style: text.headlineSmall, textAlign: TextAlign.center),
+                      VerifiedName(v.fullName, style: text.headlineSmall, center: true),
+                      const SizedBox(height: 2),
+                      Text(
+                        labelList(specialtyLabels, v.specialties),
+                        textAlign: TextAlign.center,
+                        style: text.bodyMedium!.copyWith(color: Palette.muted),
+                      ),
                       if (v.rating != null) ...[
                         const SizedBox(height: 4),
                         Row(mainAxisSize: MainAxisSize.min, children: [
@@ -45,8 +53,11 @@ class VetProfileScreen extends StatelessWidget {
                           Text(v.rating!.toStringAsFixed(1), style: text.titleMedium!.copyWith(color: Palette.amberDeep)),
                         ]),
                       ],
-                      const SizedBox(height: 12),
-                      const StatusPill('ترخيص موثّق من بيطار', tone: Tone.success, icon: Icons.verified),
+                      const SizedBox(height: 14),
+                      Wrap(alignment: WrapAlignment.center, spacing: 8, runSpacing: 8, children: [
+                        const StatusPill('ترخيص موثّق من بيطار', tone: Tone.success, icon: Icons.verified),
+                        NextSlotChip(v.nextAvailable),
+                      ]),
                     ]),
                   ),
                   InfoCard(children: [

@@ -11,6 +11,7 @@ class VetSummary {
     required this.languages,
     this.nextAvailable,
     this.gender,
+    this.bio,
   });
 
   final String id;
@@ -23,6 +24,9 @@ class VetSummary {
   /// male, female, or null when not recorded (shown with a neutral avatar).
   final String? gender;
 
+  /// Short bio; the profile always has it, the list only when list_vets returns it.
+  final String? bio;
+
   /// A veterinarian with no free time cannot be chosen for a new booking.
   bool get bookable => nextAvailable != null;
 
@@ -34,6 +38,7 @@ class VetSummary {
         languages: _strings(m['languages']),
         nextAvailable: parseTsOrNull(m['next_available']),
         gender: m['gender'] as String?,
+        bio: m['bio'] as String?,
       );
 }
 
@@ -48,13 +53,12 @@ class VetProfile extends VetSummary {
     required this.licenseExpiry,
     super.nextAvailable,
     super.gender,
-    this.bio,
+    super.bio,
     this.rating,
   });
 
   final String licenseNumber;
   final DateTime licenseExpiry;
-  final String? bio;
   final double? rating;
 
   factory VetProfile.fromMap(Map<String, dynamic> m) => VetProfile(
