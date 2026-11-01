@@ -39,7 +39,10 @@ class TermsField extends FormField<bool> {
                     'شروط الاستخدام',
                     style: TextStyle(
                       color: Theme.of(field.context).colorScheme.primary,
+                      fontWeight: FontWeight.w700,
                       decoration: TextDecoration.underline,
+                      decorationColor: Theme.of(field.context).colorScheme.secondary,
+                      decorationThickness: 2,
                     ),
                   ),
                 ),

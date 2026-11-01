@@ -29,27 +29,43 @@ class VetStatusScreen extends StatelessWidget {
               ]);
             }
             final status = v['status'] as String;
-            final (icon, color, text) = switch (status) {
-              'verified' => (Icons.verified, Colors.green, 'موثّق · يمكنك نشر المواعيد'),
-              'rejected' => (Icons.cancel_outlined, Colors.red, 'مرفوض'),
-              'license_expired' => (Icons.event_busy, Colors.orange, 'انتهى الترخيص'),
-              _ => (Icons.hourglass_top, Colors.blueGrey, 'بانتظار التحقق'),
+            final (icon, tone, text) = switch (status) {
+              'verified' => (Icons.verified, Tone.success, 'موثّق · يمكنك نشر المواعيد'),
+              'rejected' => (Icons.cancel_outlined, Tone.danger, 'مرفوض'),
+              'license_expired' => (Icons.event_busy, Tone.accent, 'انتهى الترخيص'),
+              _ => (Icons.hourglass_top, Tone.neutral, 'بانتظار التحقق'),
             };
-            return ListView(padding: const EdgeInsets.all(16), children: [
-              Card(
-                child: ListTile(leading: Icon(icon, color: color, size: 36), title: Text(text)),
+            final (soft, strong) = toneColors(tone);
+            final textTheme = Theme.of(context).textTheme;
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+              AppCard(
+                color: soft,
+                borderColor: soft,
+                shadow: false,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Column(children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                    child: Icon(icon, color: strong, size: 36),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(text, textAlign: TextAlign.center, style: textTheme.titleLarge!.copyWith(color: strong)),
+                ]),
               ),
               if (status == 'rejected' && v['rejection_reason'] != null)
-                Card(child: ListTile(title: const Text('سبب الرفض'), subtitle: Text(v['rejection_reason'] as String))),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(children: [
-                    InfoRow('رقم الترخيص', v['license_number'] as String),
-                    InfoRow('صالح حتى', formatDate(DateTime.parse(v['license_expiry'] as String))),
+                AppCard(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('سبب الرفض', style: textTheme.titleSmall),
+                    const SizedBox(height: 4),
+                    Text(v['rejection_reason'] as String, style: textTheme.bodyMedium),
                   ]),
                 ),
-              ),
+              InfoCard(children: [
+                InfoRow('رقم الترخيص', v['license_number'] as String),
+                InfoRow('صالح حتى', formatDate(DateTime.parse(v['license_expiry'] as String))),
+              ]),
             ]);
           },
         ),

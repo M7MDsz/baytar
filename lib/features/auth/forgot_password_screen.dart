@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme.dart';
 import '../../core/errors.dart';
 import '../../core/widgets.dart';
 import 'auth_repository.dart';
@@ -56,35 +57,62 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         appBar: AppBar(title: const Text('نسيت كلمة المرور')),
         body: Form(
           key: _form,
-          child: ListView(padding: const EdgeInsets.all(24), children: [
-            TextFormField(
-              controller: _email,
-              enabled: !_sent,
-              keyboardType: TextInputType.emailAddress,
-              textDirection: TextDirection.ltr,
-              decoration: const InputDecoration(labelText: 'البريد الإلكتروني'),
-              validator: validateEmail,
-            ),
-            if (_sent) ...[
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _code,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                decoration: const InputDecoration(labelText: 'الرمز من البريد'),
-                validator: validateOtp,
-              ),
-              TextFormField(
-                controller: _password,
-                obscureText: true,
-                textDirection: TextDirection.ltr,
-                decoration: const InputDecoration(labelText: 'كلمة المرور الجديدة'),
-                validator: validateNewPassword,
-              ),
-            ],
+          child: ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 32), children: [
+            const Center(child: _Medallion(Icons.lock_reset)),
             const SizedBox(height: 20),
-            BusyButton(busy: _busy, onPressed: _submit, label: _sent ? 'تغيير كلمة المرور' : 'إرسال رابط إعادة التعيين'),
+            AppCard(
+              padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                TextFormField(
+                  controller: _email,
+                  enabled: !_sent,
+                  keyboardType: TextInputType.emailAddress,
+                  textDirection: TextDirection.ltr,
+                  decoration: const InputDecoration(labelText: 'البريد الإلكتروني'),
+                  validator: validateEmail,
+                ),
+                if (_sent) ...[
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _code,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    decoration: const InputDecoration(labelText: 'الرمز من البريد'),
+                    validator: validateOtp,
+                  ),
+                  TextFormField(
+                    controller: _password,
+                    obscureText: true,
+                    textDirection: TextDirection.ltr,
+                    decoration: const InputDecoration(labelText: 'كلمة المرور الجديدة'),
+                    validator: validateNewPassword,
+                  ),
+                ],
+                const SizedBox(height: 20),
+                BusyButton(busy: _busy, onPressed: _submit, label: _sent ? 'تغيير كلمة المرور' : 'إرسال رابط إعادة التعيين'),
+              ]),
+            ),
           ]),
         ),
+      );
+}
+
+/// Icon on a soft juniper disc at the top of the short account screens.
+class _Medallion extends StatelessWidget {
+  const _Medallion(this.icon);
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        width: 88,
+        height: 88,
+        decoration: BoxDecoration(
+          color: Palette.juniperSoft,
+          shape: BoxShape.circle,
+          border: Border.all(color: Palette.surface, width: 4),
+          boxShadow: softShadow,
+        ),
+        child: Icon(icon, size: 38, color: Palette.juniper),
       );
 }
