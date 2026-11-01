@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
+import '../../app/theme.dart';
 import '../../core/widgets.dart';
 import 'voice_note.dart';
 import 'voice_player.dart';
@@ -81,23 +82,35 @@ class _VoiceRecorderFieldState extends State<VoiceRecorderField> {
   Widget build(BuildContext context) {
     final note = widget.value;
     if (_recording) {
-      return Row(children: [
-        const Icon(Icons.fiber_manual_record, color: Colors.red),
-        const SizedBox(width: 8),
-        Text('جارٍ التسجيل ${_elapsed.inMinutes}:${(_elapsed.inSeconds % 60).toString().padLeft(2, '0')}'),
-        const Spacer(),
-        FilledButton.icon(
-          style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
-          onPressed: _stop,
-          icon: const Icon(Icons.stop),
-          label: const Text('إيقاف'),
-        ),
-      ]);
+      return Container(
+        padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 6, 6),
+        decoration: BoxDecoration(color: Palette.dangerSoft, borderRadius: BorderRadius.circular(999)),
+        child: Row(children: [
+          const Icon(Icons.fiber_manual_record, color: Palette.danger, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            'جارٍ التسجيل ${_elapsed.inMinutes}:${(_elapsed.inSeconds % 60).toString().padLeft(2, '0')}',
+            style: Theme.of(context).textTheme.labelLarge!.copyWith(color: Palette.danger),
+          ),
+          const Spacer(),
+          FilledButton.icon(
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(0, 44),
+              backgroundColor: Palette.danger,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: _stop,
+            icon: const Icon(Icons.stop_rounded),
+            label: const Text('إيقاف'),
+          ),
+        ]),
+      );
     }
     if (note == null) {
-      return OutlinedButton.icon(
+      return FilledButton.tonalIcon(
+        style: tonalButton,
         onPressed: _start,
-        icon: const Icon(Icons.mic_none),
+        icon: const Icon(Icons.mic_none_rounded),
         label: const Text('تسجيل وصف صوتي'),
       );
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/errors.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
@@ -150,7 +151,11 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
     if (_animals!.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text('حالة جديدة')),
-        body: const EmptyState(icon: Icons.pets, message: 'أضف ملفاً لحيوانك أولاً من صفحة «حيواناتي».'),
+        body: const EmptyState(
+          icon: Icons.pets,
+          illustration: SpeciesCluster(['cat', 'dog', 'camel']),
+          message: 'أضف ملفاً لحيوانك أولاً من صفحة «حيواناتي».',
+        ),
       );
     }
     final hasAnimal = _animalId != null;
@@ -158,39 +163,61 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
       appBar: AppBar(title: Text(_caseId == null ? 'حالة جديدة' : 'تعديل المسودة')),
       body: AbsorbPointer(
         absorbing: _busy,
-        child: ListView(padding: const EdgeInsets.all(16), children: [
-          DropdownButtonFormField<String>(
-            initialValue: _animalId,
-            decoration: InputDecoration(labelText: requiredLabel('الحيوان')),
-            items: [for (final a in _animals!) DropdownMenuItem(value: a.id, child: Text('${a.name} · ${a.speciesLabel}'))],
-            onChanged: (v) => setState(() => _animalId = v),
-          ),
-          const SectionTitle('وصف الحالة'),
-          TextField(
-            controller: _description,
-            enabled: hasAnimal,
-            minLines: 4,
-            maxLines: 10,
-            maxLength: 2000,
-            textDirection: TextDirection.rtl,
-            decoration: InputDecoration(
-              hintText: hasAnimal ? 'اشرح ما يعاني منه حيوانك ومتى بدأت الأعراض' : 'اختر الحيوان أولاً',
+        child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+          AppCard(
+            child: DropdownButtonFormField<String>(
+              initialValue: _animalId,
+              borderRadius: BorderRadius.circular(16),
+              decoration: InputDecoration(labelText: requiredLabel('الحيوان')),
+              items: [
+                for (final a in _animals!)
+                  DropdownMenuItem(
+                    value: a.id,
+                    child: Row(children: [
+                      SpeciesAvatar(a.species, radius: 14),
+                      const SizedBox(width: 10),
+                      Text('${a.name} · ${a.speciesLabel}'),
+                    ]),
+                  ),
+              ],
+              onChanged: (v) => setState(() => _animalId = v),
             ),
           ),
-          const SizedBox(height: 8),
-          const Text('أو سجّل وصفاً صوتياً:'),
-          const SizedBox(height: 8),
-          VoiceRecorderField(value: _voice, onChanged: (v) => setState(() => _voice = v)),
-          const SectionTitle('صور وفيديو'),
-          MediaAttachmentsField(items: _media, onChanged: (m) => setState(() => _media = m)),
-          const SizedBox(height: 28),
+          SectionCard(
+            title: 'وصف الحالة',
+            icon: Icons.edit_note_rounded,
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              TextField(
+                controller: _description,
+                enabled: hasAnimal,
+                minLines: 4,
+                maxLines: 10,
+                maxLength: 2000,
+                textDirection: TextDirection.rtl,
+                decoration: InputDecoration(
+                  hintText: hasAnimal ? 'اشرح ما يعاني منه حيوانك ومتى بدأت الأعراض' : 'اختر الحيوان أولاً',
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text('أو سجّل وصفاً صوتياً:', style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Palette.muted)),
+              const SizedBox(height: 8),
+              VoiceRecorderField(value: _voice, onChanged: (v) => setState(() => _voice = v)),
+            ]),
+          ),
+          SectionCard(
+            title: 'صور وفيديو',
+            icon: Icons.photo_library_outlined,
+            child: MediaAttachmentsField(items: _media, onChanged: (m) => setState(() => _media = m)),
+          ),
+          const SizedBox(height: 20),
           FilledButton.icon(
             onPressed: _busy ? null : _onSubmit,
-            icon: const Icon(Icons.send),
+            icon: const Icon(Icons.send_rounded),
             label: const Text('إرسال الحالة'),
           ),
           const SizedBox(height: 8),
-          OutlinedButton.icon(
+          FilledButton.tonalIcon(
+            style: tonalButton,
             onPressed: _busy ? null : _onSaveDraft,
             icon: const Icon(Icons.save_outlined),
             label: const Text('حفظ كمسودة'),

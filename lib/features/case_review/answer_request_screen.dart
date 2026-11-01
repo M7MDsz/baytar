@@ -50,18 +50,19 @@ class _AnswerRequestScreenState extends State<AnswerRequestScreen> {
         appBar: AppBar(title: const Text('طلب معلومات')),
         body: AsyncView<InfoRequest>(
           load: () async => InfoRequest.fromMap(await db.from('info_requests').select().eq('id', widget.requestId).single()),
-          builder: (context, r, _) => ListView(padding: const EdgeInsets.all(16), children: [
+          builder: (context, r, _) => ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
             InfoRequestCard(request: r),
             if (r.isOpen) ...[
-              const SizedBox(height: 12),
-              TextField(
-                controller: _response,
-                minLines: 3,
-                maxLines: 8,
-                decoration: const InputDecoration(labelText: 'ردك على الطبيب'),
+              AppCard(
+                child: TextField(
+                  controller: _response,
+                  minLines: 3,
+                  maxLines: 8,
+                  decoration: const InputDecoration(labelText: 'ردك على الطبيب'),
+                ),
               ),
               const SizedBox(height: 16),
-              BusyButton(busy: _busy, onPressed: _send, label: 'إرسال الرد'),
+              BusyButton(busy: _busy, onPressed: _send, label: 'إرسال الرد', icon: Icons.send_rounded),
             ],
           ]),
         ),
