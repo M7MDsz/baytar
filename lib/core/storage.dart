@@ -9,7 +9,8 @@ import 'supabase.dart';
 /// Every private bucket keeps a user's files under `<user id>/...`; the storage policies check that prefix.
 String userFilePath(String folder, String extension) {
   final stamp = DateTime.now().millisecondsSinceEpoch;
-  final salt = Random().nextInt(1 << 32).toRadixString(16);
+  // 2^32 as a literal: on the web `1 << 32` is 0 (JavaScript shifts are 32-bit) and nextInt(0) throws.
+  final salt = Random().nextInt(0x100000000).toRadixString(16);
   return '$currentUserId/$folder/$stamp-$salt.${extension.toLowerCase()}';
 }
 
