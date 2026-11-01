@@ -86,6 +86,45 @@ TextTheme _textTheme() {
   );
 }
 
+/// Pushed pages fade through the page colour: the page underneath fades out first, then the new
+/// one fades in while sliding 24 px in from the end side (the left in Arabic). Popping plays it backwards.
+/// Instant when the system asks for reduced motion.
+class SoftPageTransitionsBuilder extends PageTransitionsBuilder {
+  const SoftPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    if (MediaQuery.disableAnimationsOf(context)) return child;
+    final toEnd = Directionality.of(context) == TextDirection.rtl ? -1.0 : 1.0;
+    return AnimatedBuilder(
+      animation: Listenable.merge([animation, secondaryAnimation]),
+      child: child,
+      builder: (context, child) {
+        final t = animation.value, covered = secondaryAnimation.value;
+        final slide = const Cubic(0.05, 0.7, 0.1, 1).transform(t);
+        final contentIn = ((t - 0.3) / 0.7).clamp(0.0, 1.0);
+        final contentOut = 1 - (covered / 0.3).clamp(0.0, 1.0);
+        return ColoredBox(
+          color: Palette.canvas.withValues(alpha: (t / 0.3).clamp(0.0, 1.0)),
+          child: Opacity(
+            opacity: contentIn * contentOut,
+            child: Transform.translate(
+              offset: Offset(toEnd * 24 * (1 - slide) - toEnd * 12 * covered, 0),
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 ThemeData buildTheme() {
   final scheme = ColorScheme.fromSeed(seedColor: juniper).copyWith(
     primary: Palette.juniper,
@@ -126,6 +165,9 @@ ThemeData buildTheme() {
 
   return ThemeData(
     useMaterial3: true,
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {for (final p in TargetPlatform.values) p: const SoftPageTransitionsBuilder()},
+    ),
     colorScheme: scheme,
     fontFamily: _font,
     textTheme: text,

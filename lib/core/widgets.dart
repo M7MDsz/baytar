@@ -315,7 +315,7 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(Radii.card);
-    return Padding(
+    final card = Padding(
       padding: margin,
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -332,6 +332,7 @@ class AppCard extends StatelessWidget {
         ),
       ),
     );
+    return onTap == null ? card : PressScale(scale: 0.985, child: card);
   }
 }
 
@@ -758,7 +759,133 @@ class BusyButton extends StatelessWidget {
     final child = busy
         ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: Palette.juniper))
         : Text(label);
-    if (icon == null || busy) return FilledButton(onPressed: busy ? null : onPressed, child: child);
-    return FilledButton.icon(onPressed: onPressed, icon: Icon(icon), label: child);
+    if (icon == null || busy) return PressScale(child: FilledButton(onPressed: busy ? null : onPressed, child: child));
+    return PressScale(child: FilledButton.icon(onPressed: onPressed, icon: Icon(icon), label: child));
   }
+}
+
+/// Fades a list item in while it rises 12 px, a little after the one before it (first load only).
+class Entrance extends StatefulWidget {
+  const Entrance({super.key, required this.child, this.index = 0});
+
+  final Widget child;
+  final int index;
+
+  @override
+  State<Entrance> createState() => _EntranceState();
+}
+
+class _EntranceState extends State<Entrance> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 320));
+  late final Animation<double> _t = CurvedAnimation(parent: _c, curve: Curves.easeOutCubic);
+  bool _started = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_started) return;
+    _started = true;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _c.value = 1;
+      return;
+    }
+    Future.delayed(Duration(milliseconds: 45 * widget.index.clamp(0, 8)), () {
+      if (mounted) _c.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _t,
+        child: widget.child,
+        builder: (context, child) => Opacity(
+          opacity: _t.value,
+          child: Transform.translate(offset: Offset(0, 12 * (1 - _t.value)), child: child),
+        ),
+      );
+}
+
+/// Shrinks its child slightly while a pointer is down on it.
+class PressScale extends StatefulWidget {
+  const PressScale({super.key, required this.child, this.scale = 0.97});
+
+  final Widget child;
+  final double scale;
+
+  @override
+  State<PressScale> createState() => _PressScaleState();
+}
+
+class _PressScaleState extends State<PressScale> {
+  bool _down = false;
+
+  void _set(bool v) {
+    if (_down != v) setState(() => _down = v);
+  }
+
+  @override
+  Widget build(BuildContext context) => Listener(
+        onPointerDown: (_) => _set(true),
+        onPointerUp: (_) => _set(false),
+        onPointerCancel: (_) => _set(false),
+        child: AnimatedScale(
+          scale: _down && !MediaQuery.disableAnimationsOf(context) ? widget.scale : 1,
+          duration: const Duration(milliseconds: 110),
+          curve: Curves.easeOut,
+          child: widget.child,
+        ),
+      );
+}
+
+/// A mint disc that pops in, then an emerald check that draws itself. Used after a booking or a submitted case.
+class SuccessCheck extends StatelessWidget {
+  const SuccessCheck({super.key, this.size = 72});
+
+  final double size;
+
+  @override
+  Widget build(BuildContext context) => TweenAnimationBuilder<double>(
+        tween: Tween(begin: MediaQuery.disableAnimationsOf(context) ? 1 : 0, end: 1),
+        duration: const Duration(milliseconds: 750),
+        builder: (context, t, _) => CustomPaint(size: Size.square(size), painter: _CheckPainter(t)),
+      );
+}
+
+class _CheckPainter extends CustomPainter {
+  _CheckPainter(this.t);
+
+  final double t;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final c = size.center(Offset.zero);
+    final disc = Curves.easeOutBack.transform((t / 0.45).clamp(0.0, 1.0));
+    canvas.drawCircle(c, size.width / 2 * disc, Paint()..color = Palette.accentSoft);
+    final draw = Curves.easeInOut.transform(((t - 0.35) / 0.65).clamp(0.0, 1.0));
+    if (draw == 0) return;
+    final w = size.width;
+    final path = Path()
+      ..moveTo(w * 0.29, w * 0.52)
+      ..lineTo(w * 0.44, w * 0.66)
+      ..lineTo(w * 0.72, w * 0.37);
+    final metric = path.computeMetrics().first;
+    canvas.drawPath(
+      metric.extractPath(0, metric.length * draw),
+      Paint()
+        ..color = Palette.accent
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = w * 0.085
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_CheckPainter old) => old.t != t;
 }
