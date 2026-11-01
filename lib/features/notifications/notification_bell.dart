@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
 import '../../core/supabase.dart';
+import '../../core/widgets.dart';
 
 /// Bell for the header of the tab screens, with a live count of unread notifications.
 /// Opens the notifications list (US-35) as a pushed page.
@@ -60,10 +61,7 @@ class _CountBadge extends StatelessWidget {
 
   final int count;
 
-  static const _digits = '٠١٢٣٤٥٦٧٨٩';
-
-  String get _label =>
-      count > 9 ? '${_digits[9]}+' : count.toString().split('').map((d) => _digits[int.parse(d)]).join();
+  String get _label => count > 9 ? '${arabicDigits(9)}+' : arabicDigits(count);
 
   @override
   Widget build(BuildContext context) => TweenAnimationBuilder<double>(

@@ -114,7 +114,7 @@ class EmptyState extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(color: Palette.canvas, width: 3),
                       ),
-                      child: const Icon(Icons.pets, size: 16, color: Palette.sand),
+                      child: const Icon(Icons.pets, size: 16, color: Colors.white),
                     ),
                   ),
                 ]),
@@ -727,6 +727,15 @@ class BottomActionBar extends StatelessWidget {
           ),
         ),
       );
+}
+
+/// Writes a number with Arabic-Indic digits (٠١٢…), matching the dates the app shows.
+String arabicDigits(Object n) {
+  const digits = '٠١٢٣٤٥٦٧٨٩';
+  return n.toString().split('').map((c) {
+    final d = int.tryParse(c);
+    return d == null ? c : digits[d];
+  }).join();
 }
 
 /// List padding for a page: 16 at the sides and, at the bottom, [bottom] plus the system inset.
