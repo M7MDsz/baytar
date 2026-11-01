@@ -15,8 +15,8 @@ class ReferralCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return AppCard(
-      color: Palette.amberSoft,
-      borderColor: Palette.amber.withValues(alpha: 0.35),
+      color: Palette.accentSoft,
+      borderColor: Palette.accent.withValues(alpha: 0.35),
       shadow: false,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -26,11 +26,11 @@ class ReferralCard extends StatelessWidget {
           Text(formatDate(referral.createdAt), style: text.bodySmall),
         ]),
         const SizedBox(height: 12),
-        Text('السبب', style: text.labelLarge!.copyWith(color: Palette.amberDeep)),
+        Text('السبب', style: text.labelLarge!.copyWith(color: Palette.accentDeep)),
         const SizedBox(height: 2),
         Text(referral.reason, style: text.bodyMedium),
         const SizedBox(height: 10),
-        Text('التعليمات', style: text.labelLarge!.copyWith(color: Palette.amberDeep)),
+        Text('التعليمات', style: text.labelLarge!.copyWith(color: Palette.accentDeep)),
         const SizedBox(height: 2),
         Text(referral.instructions, style: text.bodyMedium),
       ]),

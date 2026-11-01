@@ -48,9 +48,9 @@ class VetProfileScreen extends StatelessWidget {
                       if (v.rating != null) ...[
                         const SizedBox(height: 4),
                         Row(mainAxisSize: MainAxisSize.min, children: [
-                          const Icon(Icons.star_rounded, color: Palette.amber, size: 22),
+                          const Icon(Icons.star_rounded, color: Palette.accent, size: 22),
                           const SizedBox(width: 4),
-                          Text(v.rating!.toStringAsFixed(1), style: text.titleMedium!.copyWith(color: Palette.amberDeep)),
+                          Text(v.rating!.toStringAsFixed(1), style: text.titleMedium!.copyWith(color: Palette.accentDeep)),
                         ]),
                       ],
                       const SizedBox(height: 14),

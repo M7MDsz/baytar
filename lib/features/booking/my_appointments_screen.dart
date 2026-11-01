@@ -7,10 +7,10 @@ import '../notifications/notification_bell.dart';
 import 'booking_repository.dart';
 import 'owner_appointment.dart';
 
-/// Pill colour for an appointment status: upcoming amber, completed green, cancelled red, past grey.
+/// Pill colour for an appointment status: upcoming emerald, completed juniper, cancelled red, past grey.
 Tone appointmentTone(OwnerAppointment a) => switch (a.status) {
       'cancelled' => Tone.danger,
-      'completed' => Tone.success,
+      'completed' => Tone.brand,
       _ => a.isUpcoming ? Tone.accent : Tone.neutral,
     };
 

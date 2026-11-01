@@ -19,11 +19,11 @@ class InfoRequestCard extends StatelessWidget {
     return AppCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          IconTile(Icons.help_outline_rounded, tone: r.isOpen ? Tone.accent : Tone.success, size: 40),
+          IconTile(Icons.help_outline_rounded, tone: r.isOpen ? Tone.accent : Tone.brand, size: 40),
           const SizedBox(width: 12),
           Expanded(child: Text('طلب معلومات · ${formatDayTime(r.createdAt)}', style: text.titleSmall)),
           const SizedBox(width: 8),
-          StatusPill(r.isOpen ? 'بانتظار الرد' : 'تم الرد', tone: r.isOpen ? Tone.accent : Tone.success),
+          StatusPill(r.isOpen ? 'بانتظار الرد' : 'تم الرد', tone: r.isOpen ? Tone.accent : Tone.brand),
         ]),
         const SizedBox(height: 10),
         Text(r.message, style: text.bodyMedium),

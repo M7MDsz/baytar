@@ -67,7 +67,7 @@ Future<bool> confirmDialog(
   return result ?? false;
 }
 
-/// Second-level action next to the amber main button: a soft juniper filled button.
+/// Second-level action next to the main button: a soft juniper filled button.
 final ButtonStyle tonalButton = FilledButton.styleFrom(
   backgroundColor: Palette.juniperSoft,
   foregroundColor: Palette.juniper,
@@ -110,7 +110,7 @@ class EmptyState extends StatelessWidget {
                       width: 34,
                       height: 34,
                       decoration: BoxDecoration(
-                        color: Palette.amber,
+                        color: Palette.accent,
                         shape: BoxShape.circle,
                         border: Border.all(color: Palette.canvas, width: 3),
                       ),
@@ -398,7 +398,7 @@ enum Tone { brand, accent, success, danger, neutral }
 
 (Color, Color) toneColors(Tone tone) => switch (tone) {
       Tone.brand => (Palette.juniperSoft, Palette.juniper),
-      Tone.accent => (Palette.amberSoft, Palette.amberDeep),
+      Tone.accent => (Palette.accentSoft, Palette.accentDeep),
       Tone.success => (Palette.successSoft, Palette.success),
       Tone.danger => (Palette.dangerSoft, Palette.danger),
       Tone.neutral => (Palette.surfaceMuted, Palette.muted),
@@ -501,7 +501,7 @@ class NameAvatar extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Palette.sand,
-          border: Border.all(color: Palette.amber.withValues(alpha: 0.35), width: radius > 32 ? 3 : 2),
+          border: Border.all(color: Palette.accent.withValues(alpha: 0.35), width: radius > 32 ? 3 : 2),
         ),
         child: Text(
           _initial,
@@ -549,7 +549,7 @@ class SpeciesAvatar extends StatelessWidget {
     final warm = const {'dog', 'horse', 'sheep_goat'}.contains(code);
     return _IllustratedAvatar(
       asset: 'assets/avatars/animal_$code.png',
-      background: code == 'other' ? Palette.sand : (warm ? Palette.amberSoft : Palette.juniperSoft),
+      background: code == 'other' ? Palette.sand : (warm ? Palette.accentSoft : Palette.juniperSoft),
       radius: radius,
     );
   }
@@ -569,7 +569,7 @@ class DoctorAvatar extends StatelessWidget {
           'female' => 'assets/avatars/doctor_female.png',
           _ => 'assets/avatars/doctor_neutral.png',
         },
-        background: gender == 'female' ? Palette.amberSoft : Palette.juniperSoft,
+        background: gender == 'female' ? Palette.accentSoft : Palette.juniperSoft,
         radius: radius,
       );
 }

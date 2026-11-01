@@ -51,14 +51,14 @@ class _CasesScreenState extends State<CasesScreen> {
               child: Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: drafts ? Palette.amberSoft : Palette.juniperSoft,
+                  color: drafts ? Palette.accentSoft : Palette.juniperSoft,
                   shape: BoxShape.circle,
                   border: Border.all(color: Palette.surface, width: 2),
                 ),
                 child: Icon(
                   drafts ? Icons.edit_note : Icons.assignment_outlined,
                   size: 14,
-                  color: drafts ? Palette.amberDeep : Palette.juniper,
+                  color: drafts ? Palette.accentDeep : Palette.juniper,
                 ),
               ),
             ),

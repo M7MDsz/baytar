@@ -91,11 +91,11 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             return ListView(padding: pagePadding(context, bottom: 96), children: [
               for (final s in slots)
                 ListCard(
-                  leading: IconTile(s.booked ? Icons.event_busy : Icons.event_available, tone: s.booked ? Tone.accent : Tone.success),
+                  leading: IconTile(s.booked ? Icons.event_busy : Icons.event_available, tone: s.booked ? Tone.neutral : Tone.success),
                   title: formatDayTime(s.startsAt),
                   details: Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: StatusPill(s.booked ? 'محجوز' : 'متاح', tone: s.booked ? Tone.accent : Tone.success, dot: true),
+                    child: StatusPill(s.booked ? 'محجوز' : 'متاح', tone: s.booked ? Tone.neutral : Tone.success, dot: true),
                   ),
                   trailing: s.booked
                       ? null

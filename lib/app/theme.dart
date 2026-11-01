@@ -5,22 +5,25 @@ const juniper = Color(0xFF0E2A25);
 const sand = Color(0xFFF4EEE2);
 const amber = Color(0xFFD9772B);
 
-/// The full palette, built around the three logo colours.
-/// Juniper carries structure and text, amber marks the main action on a screen,
-/// and warm off-white surfaces keep the app light and calm.
+/// The full palette (chosen by Mohammed: "A2, juniper + emerald").
+/// Juniper from the logo carries structure and text, emerald marks the main action on a screen,
+/// soft mint tints highlight, and warm off-white surfaces keep the app light and calm.
+/// The logo itself keeps its own colours.
 abstract final class Palette {
   static const juniper = Color(0xFF0E2A25);
   static const juniperMid = Color(0xFF1C463E);
-  static const juniperSoft = Color(0xFFE5EEEB);
-  static const amber = Color(0xFFD9772B);
-  static const amberSoft = Color(0xFFFBEADB);
-  static const amberDeep = Color(0xFF9A4D14);
+  static const juniperSoft = Color(0xFFE2F3E8);
 
-  /// Text and icons on the amber main button.
-  static const onAmber = Color(0xFF0E2A25);
+  /// Main-action colour: buttons, the add button, the current tab, links.
+  static const accent = Color(0xFF15803D);
+  static const accentSoft = Color(0xFFDCFCE7);
+  static const accentDeep = Color(0xFF166534);
+
+  /// Text and icons on the accent.
+  static const onAccent = Color(0xFFFFFFFF);
 
   /// Text buttons and links.
-  static const link = Color(0xFF0E2A25);
+  static const link = Color(0xFF15803D);
   static const sand = Color(0xFFF4EEE2);
 
   /// Page background: a lighter, cleaner version of the logo's sand.
@@ -31,6 +34,9 @@ abstract final class Palette {
   static const ink = Color(0xFF0E2A25);
   static const body = Color(0xFF243531);
   static const muted = Color(0xFF5B6A66);
+
+  /// Resting icons and labels in the bottom navigation.
+  static const navRest = Color(0xFF6B7280);
 
   static const line = Color(0xFFE8E3D9);
   static const lineStrong = Color(0xFFD3CCBE);
@@ -83,10 +89,10 @@ ThemeData buildTheme() {
     onPrimary: Colors.white,
     primaryContainer: Palette.juniperSoft,
     onPrimaryContainer: Palette.juniper,
-    secondary: Palette.amber,
-    onSecondary: Palette.onAmber,
-    secondaryContainer: Palette.amberSoft,
-    onSecondaryContainer: Palette.amberDeep,
+    secondary: Palette.accent,
+    onSecondary: Palette.onAccent,
+    secondaryContainer: Palette.accentSoft,
+    onSecondaryContainer: Palette.accentDeep,
     error: Palette.danger,
     onError: Colors.white,
     errorContainer: Palette.dangerSoft,
@@ -104,7 +110,7 @@ ThemeData buildTheme() {
     surfaceTint: Colors.transparent,
     inverseSurface: Palette.juniper,
     onInverseSurface: Colors.white,
-    inversePrimary: Palette.amber,
+    inversePrimary: Palette.accent,
   );
   final text = _textTheme();
   final stadium = WidgetStatePropertyAll<OutlinedBorder>(const StadiumBorder());
@@ -189,13 +195,13 @@ ThemeData buildTheme() {
         elevation: const WidgetStatePropertyAll(0),
         iconSize: const WidgetStatePropertyAll(20),
         backgroundColor: WidgetStateColor.resolveWith(
-          (s) => s.contains(WidgetState.disabled) ? const Color(0xFFE9E4DA) : Palette.amber,
+          (s) => s.contains(WidgetState.disabled) ? const Color(0xFFE9E4DA) : Palette.accent,
         ),
         foregroundColor: WidgetStateColor.resolveWith(
-          (s) => s.contains(WidgetState.disabled) ? Palette.muted : Palette.onAmber,
+          (s) => s.contains(WidgetState.disabled) ? Palette.muted : Palette.onAccent,
         ),
         overlayColor: WidgetStateColor.resolveWith(
-          (s) => s.contains(WidgetState.pressed) ? Palette.onAmber.withValues(alpha: 0.14) : Palette.onAmber.withValues(alpha: 0.06),
+          (s) => s.contains(WidgetState.pressed) ? Palette.onAccent.withValues(alpha: 0.14) : Palette.onAccent.withValues(alpha: 0.06),
         ),
       ),
     ),
@@ -228,8 +234,8 @@ ThemeData buildTheme() {
       style: IconButton.styleFrom(minimumSize: const Size(48, 48), foregroundColor: Palette.juniper),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: Palette.amber,
-      foregroundColor: Palette.onAmber,
+      backgroundColor: Palette.accent,
+      foregroundColor: Palette.onAccent,
       elevation: 3,
       focusElevation: 3,
       hoverElevation: 4,
@@ -299,7 +305,7 @@ ThemeData buildTheme() {
       elevation: 0,
       backgroundColor: Palette.surface,
       surfaceTintColor: Colors.transparent,
-      indicatorColor: Palette.amberSoft,
+      indicatorColor: Palette.accentSoft,
       indicatorShape: const StadiumBorder(),
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       iconTheme: WidgetStateProperty.resolveWith(
@@ -344,7 +350,7 @@ ThemeData buildTheme() {
       behavior: SnackBarBehavior.floating,
       backgroundColor: Palette.juniper,
       contentTextStyle: text.bodyMedium!.copyWith(color: Colors.white),
-      actionTextColor: Palette.amber,
+      actionTextColor: Palette.accent,
       shape: rounded(Radii.tile),
       insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
     ),
@@ -367,7 +373,7 @@ ThemeData buildTheme() {
       linearMinHeight: 6,
       borderRadius: BorderRadius.all(Radius.circular(999)),
     ),
-    badgeTheme: const BadgeThemeData(backgroundColor: Palette.amber, textColor: Palette.onAmber),
+    badgeTheme: const BadgeThemeData(backgroundColor: Palette.accent, textColor: Palette.onAccent),
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(color: Palette.juniper, borderRadius: BorderRadius.circular(8)),
       textStyle: text.labelMedium!.copyWith(color: Colors.white),

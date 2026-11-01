@@ -160,7 +160,7 @@ class _Hero extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Palette.sand,
                 shape: BoxShape.circle,
-                border: Border.all(color: Palette.amber.withValues(alpha: 0.55), width: 3),
+                border: Border.all(color: Palette.accent.withValues(alpha: 0.55), width: 3),
               ),
               child: Image.asset('assets/logo/baytar-mark.png'),
             ),

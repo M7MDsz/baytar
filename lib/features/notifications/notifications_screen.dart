@@ -60,7 +60,7 @@ class NotificationsScreen extends StatelessWidget {
                           width: 12,
                           height: 12,
                           decoration: BoxDecoration(
-                            color: Palette.amber,
+                            color: Palette.accent,
                             shape: BoxShape.circle,
                             border: Border.all(color: Palette.surface, width: 2),
                           ),

@@ -71,7 +71,7 @@ class HomeShell extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: radius,
             boxShadow: const [
-              BoxShadow(color: Color(0x332A2118), blurRadius: 36, offset: Offset(0, 14), blurStyle: BlurStyle.outer),
+              BoxShadow(color: Color(0x2E2A2118), blurRadius: 30, offset: Offset(0, 10), blurStyle: BlurStyle.outer),
             ],
           ),
           child: ClipRRect(
@@ -150,13 +150,13 @@ class _NavItemState extends State<_NavItem> {
     if (!widget.selected) return Icon(rest, size: 24, color: Palette.body.withValues(alpha: 0.8));
     // The paw has no outlined form, so it gets a drawn outline instead of an outlined icon on top.
     if (widget.tab.icon == Icons.pets) {
-      return Icon(active, size: 24, color: Palette.amber, shadows: [
+      return Icon(active, size: 24, color: Palette.accent, shadows: [
         for (final o in const [Offset(1, 0), Offset(-1, 0), Offset(0, 1), Offset(0, -1)])
           Shadow(color: Palette.ink, offset: o * 0.9),
       ]);
     }
     return Stack(alignment: Alignment.center, children: [
-      Icon(active, size: 24, color: Palette.amber),
+      Icon(active, size: 24, color: Palette.accent),
       Icon(rest, size: 24, color: Palette.ink),
     ]);
   }

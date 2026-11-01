@@ -33,7 +33,7 @@ class VetStatusScreen extends StatelessWidget {
             final (icon, tone, text) = switch (status) {
               'verified' => (Icons.verified, Tone.success, 'موثّق · يمكنك نشر المواعيد'),
               'rejected' => (Icons.cancel_outlined, Tone.danger, 'مرفوض'),
-              'license_expired' => (Icons.event_busy, Tone.accent, 'انتهى الترخيص'),
+              'license_expired' => (Icons.event_busy, Tone.danger, 'انتهى الترخيص'),
               _ => (Icons.hourglass_top, Tone.neutral, 'بانتظار التحقق'),
             };
             final (soft, strong) = toneColors(tone);

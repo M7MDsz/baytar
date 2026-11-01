@@ -88,8 +88,8 @@ class _AppointmentTile extends StatelessWidget {
     final canJoin = canJoinNow(a.startsAt, UserRole.vet);
     return ListCard(
       onTap: () => context.push(vetCasePath(a.caseId)),
-      color: canJoin ? Palette.amberSoft.withValues(alpha: 0.45) : Palette.surface,
-      borderColor: canJoin ? Palette.amber.withValues(alpha: 0.5) : Palette.line,
+      color: canJoin ? Palette.accentSoft.withValues(alpha: 0.45) : Palette.surface,
+      borderColor: canJoin ? Palette.accent.withValues(alpha: 0.5) : Palette.line,
       leading: SpeciesAvatar(a.species, radius: 26),
       title: '${a.animalName} · ${a.speciesLabel}',
       subtitle: '${showDay ? formatDayTime(a.startsAt) : formatTime(a.startsAt)}\nالمالك: ${a.ownerFirstName}',
