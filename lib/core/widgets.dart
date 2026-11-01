@@ -9,7 +9,7 @@ void showSnack(BuildContext context, String message, {bool error = false}) {
     ..showSnackBar(SnackBar(
       content: error
           ? Row(children: [
-              const Icon(Icons.error_outline, color: Colors.white, size: 20),
+              const Icon(Icons.error_outline_rounded, color: Colors.white, size: 20),
               const SizedBox(width: 10),
               Expanded(child: Text(message)),
             ])
@@ -18,6 +18,7 @@ void showSnack(BuildContext context, String message, {bool error = false}) {
     ));
 }
 
+/// Asks for confirmation in a bottom sheet with a drag handle. Returns true only when confirmed.
 Future<bool> confirmDialog(
   BuildContext context, {
   required String title,
@@ -25,36 +26,62 @@ Future<bool> confirmDialog(
   required String confirmLabel,
   bool destructive = false,
 }) async {
-  final result = await showDialog<bool>(
+  final result = await showModalBottomSheet<bool>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text(title),
-      content: Text(message),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('تراجع')),
-        FilledButton(
-          style: destructive
-              ? FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  foregroundColor: Theme.of(context).colorScheme.onError,
-                )
-              : null,
-          onPressed: () => Navigator.pop(context, true),
-          child: Text(confirmLabel),
+    showDragHandle: true,
+    builder: (context) {
+      final text = Theme.of(context).textTheme;
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Center(
+              child: IconTile(
+                destructive ? Icons.warning_amber_rounded : Icons.help_outline_rounded,
+                tone: destructive ? Tone.danger : Tone.brand,
+                size: 56,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(title, textAlign: TextAlign.center, style: text.titleLarge),
+            const SizedBox(height: 8),
+            Text(message, textAlign: TextAlign.center, style: text.bodyMedium!.copyWith(color: Palette.muted)),
+            const SizedBox(height: 24),
+            FilledButton(
+              style: destructive
+                  ? FilledButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.error,
+                      foregroundColor: Theme.of(context).colorScheme.onError,
+                    )
+                  : null,
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(confirmLabel),
+            ),
+            const SizedBox(height: 8),
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('تراجع')),
+          ]),
         ),
-      ],
-    ),
+      );
+    },
   );
   return result ?? false;
 }
 
-/// Friendly empty or error state: a soft brand medallion, a short message and an optional action.
+/// Second-level action next to the amber main button: a soft juniper filled button.
+final ButtonStyle tonalButton = FilledButton.styleFrom(
+  backgroundColor: Palette.juniperSoft,
+  foregroundColor: Palette.juniper,
+);
+
+/// Friendly empty or error state: an illustration (a soft brand medallion by default),
+/// a short message and an optional action.
 class EmptyState extends StatelessWidget {
-  const EmptyState({super.key, required this.icon, required this.message, this.action});
+  const EmptyState({super.key, required this.icon, required this.message, this.action, this.illustration});
 
   final IconData icon;
   final String message;
   final Widget? action;
+  final Widget? illustration;
 
   @override
   Widget build(BuildContext context) {
@@ -63,35 +90,36 @@ class EmptyState extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          SizedBox(
-            width: 112,
-            height: 104,
-            child: Stack(children: [
-              Center(
-                child: Container(
-                  width: 96,
-                  height: 96,
-                  decoration: const BoxDecoration(color: Palette.juniperSoft, shape: BoxShape.circle),
-                  child: Icon(icon, size: 42, color: Palette.juniper),
-                ),
-              ),
-              PositionedDirectional(
-                bottom: 2,
-                end: 4,
-                child: Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    color: Palette.amber,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Palette.canvas, width: 3),
+          illustration ??
+              SizedBox(
+                width: 112,
+                height: 104,
+                child: Stack(children: [
+                  Center(
+                    child: Container(
+                      width: 96,
+                      height: 96,
+                      decoration: const BoxDecoration(color: Palette.juniperSoft, shape: BoxShape.circle),
+                      child: Icon(icon, size: 42, color: Palette.juniper),
+                    ),
                   ),
-                  child: const Icon(Icons.pets, size: 16, color: Palette.sand),
-                ),
+                  PositionedDirectional(
+                    bottom: 2,
+                    end: 4,
+                    child: Container(
+                      width: 34,
+                      height: 34,
+                      decoration: BoxDecoration(
+                        color: Palette.amber,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Palette.canvas, width: 3),
+                      ),
+                      child: const Icon(Icons.pets, size: 16, color: Palette.sand),
+                    ),
+                  ),
+                ]),
               ),
-            ]),
-          ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 20),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 320),
             child: Text(message, textAlign: TextAlign.center, style: text.bodyLarge!.copyWith(color: Palette.muted)),
@@ -103,7 +131,32 @@ class EmptyState extends StatelessWidget {
   }
 }
 
-/// Loads [future] and shows a spinner, an error with retry, or [builder].
+/// A few overlapping species cartoons, used as an empty-state illustration.
+class SpeciesCluster extends StatelessWidget {
+  const SpeciesCluster(this.species, {super.key, this.radius = 34});
+
+  final List<String> species;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    final step = radius * 1.35;
+    return SizedBox(
+      width: radius * 2 + step * (species.length - 1),
+      height: radius * 2 + 8,
+      child: Stack(children: [
+        for (var i = 0; i < species.length; i++)
+          PositionedDirectional(
+            start: step * i,
+            top: i.isOdd ? 8 : 0,
+            child: SpeciesAvatar(species[i], radius: radius),
+          ),
+      ]),
+    );
+  }
+}
+
+/// Loads [future] and shows a shimmering skeleton, an error with retry, or [builder].
 class AsyncView<T> extends StatefulWidget {
   const AsyncView({super.key, required this.load, required this.builder});
 
@@ -124,25 +177,118 @@ class _AsyncViewState<T> extends State<AsyncView<T>> {
     return FutureBuilder<T>(
       future: _future,
       builder: (context, snap) {
+        final Widget child;
         if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator(strokeWidth: 3));
-        }
-        if (snap.hasError) {
-          return EmptyState(
-            icon: Icons.cloud_off,
+          child = const SkeletonList(key: ValueKey('loading'));
+        } else if (snap.hasError) {
+          child = EmptyState(
+            key: const ValueKey('error'),
+            icon: Icons.cloud_off_rounded,
             message: friendlyError(snap.error!),
             action: OutlinedButton(onPressed: _reload, child: const Text('إعادة المحاولة')),
           );
+        } else {
+          child = RefreshIndicator(
+            key: const ValueKey('data'),
+            color: Palette.juniper,
+            backgroundColor: Palette.surface,
+            onRefresh: () async => _reload(),
+            child: widget.builder(context, snap.data as T, _reload),
+          );
         }
-        return RefreshIndicator(
-          color: Palette.juniper,
-          backgroundColor: Palette.surface,
-          onRefresh: () async => _reload(),
-          child: widget.builder(context, snap.data as T, _reload),
-        );
+        return AnimatedSwitcher(duration: const Duration(milliseconds: 220), child: child);
       },
     );
   }
+}
+
+/// Grey placeholder cards with a light sweeping shimmer, shown while a page loads.
+class SkeletonList extends StatelessWidget {
+  const SkeletonList({super.key, this.count = 4});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget bar(double width, double height) => Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(color: Palette.surfaceMuted, borderRadius: BorderRadius.circular(8)),
+        );
+    return Shimmer(
+      child: ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+        children: [
+          for (var i = 0; i < count; i++)
+            AppCard(
+              shadow: false,
+              child: Row(children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: const BoxDecoration(color: Palette.surfaceMuted, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    bar(i.isEven ? 140 : 110, 14),
+                    const SizedBox(height: 10),
+                    bar(i.isEven ? 200 : 170, 10),
+                  ]),
+                ),
+              ]),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Sweeps a soft highlight across [child] (for skeletons).
+class Shimmer extends StatefulWidget {
+  const Shimmer({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  State<Shimmer> createState() => _ShimmerState();
+}
+
+class _ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 1300))
+    ..repeat();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AnimatedBuilder(
+        animation: _c,
+        child: widget.child,
+        builder: (context, child) => ShaderMask(
+          blendMode: BlendMode.srcATop,
+          shaderCallback: (rect) => LinearGradient(
+            colors: [Colors.white.withValues(alpha: 0), Colors.white.withValues(alpha: 0.7), Colors.white.withValues(alpha: 0)],
+            stops: const [0.35, 0.5, 0.65],
+            transform: _Slide(_c.value),
+          ).createShader(rect),
+          child: child,
+        ),
+      );
+}
+
+class _Slide extends GradientTransform {
+  const _Slide(this.t);
+
+  final double t;
+
+  @override
+  Matrix4 transform(Rect bounds, {TextDirection? textDirection}) =>
+      Matrix4.translationValues(bounds.width * (t * 2 - 1), 0, 0);
 }
 
 /// White rounded card with a hairline border and a soft juniper-tinted shadow.
@@ -582,6 +728,11 @@ class BottomActionBar extends StatelessWidget {
         ),
       );
 }
+
+/// List padding for a page: 16 at the sides and, at the bottom, [bottom] plus the system inset.
+/// Inside the tab shell that inset includes the floating navigation bar, so the last item clears it.
+EdgeInsets pagePadding(BuildContext context, {double top = 4, double bottom = 24}) =>
+    EdgeInsets.fromLTRB(16, top, 16, bottom + MediaQuery.paddingOf(context).bottom);
 
 /// Label with a red star for required form fields.
 String requiredLabel(String text) => '$text *';

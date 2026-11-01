@@ -15,6 +15,12 @@ abstract final class Palette {
   static const amber = Color(0xFFD9772B);
   static const amberSoft = Color(0xFFFBEADB);
   static const amberDeep = Color(0xFF9A4D14);
+
+  /// Text and icons on the amber main button.
+  static const onAmber = Color(0xFF0E2A25);
+
+  /// Text buttons and links.
+  static const link = Color(0xFF0E2A25);
   static const sand = Color(0xFFF4EEE2);
 
   /// Page background: a lighter, cleaner version of the logo's sand.
@@ -78,7 +84,7 @@ ThemeData buildTheme() {
     primaryContainer: Palette.juniperSoft,
     onPrimaryContainer: Palette.juniper,
     secondary: Palette.amber,
-    onSecondary: Palette.juniper,
+    onSecondary: Palette.onAmber,
     secondaryContainer: Palette.amberSoft,
     onSecondaryContainer: Palette.amberDeep,
     error: Palette.danger,
@@ -186,10 +192,10 @@ ThemeData buildTheme() {
           (s) => s.contains(WidgetState.disabled) ? const Color(0xFFE9E4DA) : Palette.amber,
         ),
         foregroundColor: WidgetStateColor.resolveWith(
-          (s) => s.contains(WidgetState.disabled) ? Palette.muted : Palette.juniper,
+          (s) => s.contains(WidgetState.disabled) ? Palette.muted : Palette.onAmber,
         ),
         overlayColor: WidgetStateColor.resolveWith(
-          (s) => s.contains(WidgetState.pressed) ? Palette.juniper.withValues(alpha: 0.12) : Palette.juniper.withValues(alpha: 0.06),
+          (s) => s.contains(WidgetState.pressed) ? Palette.onAmber.withValues(alpha: 0.14) : Palette.onAmber.withValues(alpha: 0.06),
         ),
       ),
     ),
@@ -215,7 +221,7 @@ ThemeData buildTheme() {
         minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
         padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(horizontal: 14)),
         textStyle: WidgetStatePropertyAll(text.labelLarge),
-        foregroundColor: const WidgetStatePropertyAll(Palette.juniper),
+        foregroundColor: const WidgetStatePropertyAll(Palette.link),
       ),
     ),
     iconButtonTheme: IconButtonThemeData(
@@ -223,7 +229,7 @@ ThemeData buildTheme() {
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
       backgroundColor: Palette.amber,
-      foregroundColor: Palette.juniper,
+      foregroundColor: Palette.onAmber,
       elevation: 3,
       focusElevation: 3,
       hoverElevation: 4,
@@ -350,7 +356,7 @@ ThemeData buildTheme() {
       linearMinHeight: 6,
       borderRadius: BorderRadius.all(Radius.circular(999)),
     ),
-    badgeTheme: const BadgeThemeData(backgroundColor: Palette.amber, textColor: Palette.juniper),
+    badgeTheme: const BadgeThemeData(backgroundColor: Palette.amber, textColor: Palette.onAmber),
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(color: Palette.juniper, borderRadius: BorderRadius.circular(8)),
       textStyle: text.labelMedium!.copyWith(color: Colors.white),
