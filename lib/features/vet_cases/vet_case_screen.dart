@@ -96,43 +96,56 @@ class _VetCaseScreenState extends State<VetCaseScreen> {
             }
             final c = data.record, a = data.animal, appt = data.appointment;
             final startsAt = appt == null ? null : parseTs(appt['starts_at']);
-            return ListView(padding: const EdgeInsets.all(16), children: [
-              Text('${a.name} · ${a.speciesLabel}', style: Theme.of(context).textTheme.headlineSmall),
-              if (c.caseNumber != null) Text(c.caseNumber!),
-              const SizedBox(height: 12),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(children: [
-                    InfoRow('السلالة', a.breed),
-                    InfoRow('الجنس', a.sexLabel),
-                    InfoRow('العمر', a.ageLabel),
-                    InfoRow('الوزن', a.weightKg == null ? null : '${a.weightKg} كجم'),
-                    InfoRow('حالات معروفة', a.conditions),
-                    InfoRow('الحساسية', a.allergies),
-                    if (startsAt != null) InfoRow('الموعد', formatDayTime(startsAt)),
-                  ]),
-                ),
+            final text = Theme.of(context).textTheme;
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+              AppCard(
+                padding: const EdgeInsets.all(18),
+                child: Row(children: [
+                  SpeciesAvatar(a.species, radius: 32),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('${a.name} · ${a.speciesLabel}', style: text.titleLarge),
+                      if (c.caseNumber != null) ...[const SizedBox(height: 6), TagChip(c.caseNumber!, icon: Icons.tag_rounded)],
+                    ]),
+                  ),
+                ]),
               ),
+              InfoCard(children: [
+                InfoRow('السلالة', a.breed),
+                InfoRow('الجنس', a.sexLabel),
+                InfoRow('العمر', a.ageLabel),
+                InfoRow('الوزن', a.weightKg == null ? null : '${a.weightKg} كجم'),
+                InfoRow('حالات معروفة', a.conditions),
+                InfoRow('الحساسية', a.allergies),
+                if (startsAt != null) InfoRow('الموعد', formatDayTime(startsAt)),
+              ]),
               const SectionTitle('وصف المالك'),
-              Text((c.description ?? '').isEmpty ? 'لا يوجد وصف مكتوب.' : c.description!),
-              if (c.voicePath != null) ...[const SizedBox(height: 12), VoicePlayer(note: VoiceNote.remote(c.voicePath!))],
+              AppCard(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  Text((c.description ?? '').isEmpty ? 'لا يوجد وصف مكتوب.' : c.description!, style: text.bodyLarge),
+                  if (c.voicePath != null) ...[const SizedBox(height: 12), VoicePlayer(note: VoiceNote.remote(c.voicePath!))],
+                ]),
+              ),
               const SectionTitle('المرفقات'),
-              MediaGallery(items: c.media),
+              AppCard(child: MediaGallery(items: c.media)),
               for (final r in data.referrals) ReferralCard(referral: r),
               if (data.requests.isNotEmpty) const SectionTitle('طلبات المعلومات'),
               for (final r in data.requests) InfoRequestCard(request: r),
-              const SizedBox(height: 24),
-              if (appt != null && startsAt != null && appt['status'] == 'booked' && canJoinNow(startsAt, UserRole.vet))
+              const SizedBox(height: 20),
+              if (appt != null && startsAt != null && appt['status'] == 'booked' && canJoinNow(startsAt, UserRole.vet)) ...[
                 FilledButton.icon(
                   onPressed: () => context.push(vetConsultationPath(appt['id'] as String)),
-                  icon: const Icon(Icons.video_call),
+                  icon: const Icon(Icons.video_call_rounded),
                   label: const Text('الانضمام إلى الاستشارة'),
                 ),
+                const SizedBox(height: 8),
+              ],
               if (appt != null && appt['started_at'] != null)
-                OutlinedButton.icon(
+                FilledButton.tonalIcon(
+                  style: tonalButton,
                   onPressed: () => context.push(outcomeFormPath(appt['id'] as String)),
-                  icon: const Icon(Icons.edit_note),
+                  icon: const Icon(Icons.edit_note_rounded),
                   label: const Text('توثيق نتيجة الاستشارة'),
                 ),
               const SizedBox(height: 8),
@@ -191,8 +204,12 @@ class _RequestInfoSheetState extends State<_RequestInfoSheet> {
   Widget build(BuildContext context) => Padding(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text('طلب معلومات من المالك', style: Theme.of(context).textTheme.titleLarge),
-          const SizedBox(height: 12),
+          Row(children: [
+            const IconTile(Icons.help_outline_rounded, tone: Tone.accent, size: 40),
+            const SizedBox(width: 12),
+            Expanded(child: Text('طلب معلومات من المالك', style: Theme.of(context).textTheme.titleLarge)),
+          ]),
+          const SizedBox(height: 16),
           TextField(
             controller: _message,
             minLines: 3,
@@ -200,7 +217,7 @@ class _RequestInfoSheetState extends State<_RequestInfoSheet> {
             decoration: const InputDecoration(hintText: 'مثال: أرسل صورة واضحة للجرح من قريب'),
           ),
           const SizedBox(height: 16),
-          BusyButton(busy: _busy, onPressed: _send, label: 'إرسال الطلب'),
+          BusyButton(busy: _busy, onPressed: _send, label: 'إرسال الطلب', icon: Icons.send_rounded),
         ]),
       );
 }

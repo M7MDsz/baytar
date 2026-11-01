@@ -88,7 +88,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 EmptyState(icon: Icons.schedule, message: 'لم تنشر أي مواعيد بعد.'),
               ]);
             }
-            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 96), children: [
+            return ListView(padding: pagePadding(context, bottom: 96), children: [
               for (final s in slots)
                 ListCard(
                   leading: IconTile(s.booked ? Icons.event_busy : Icons.event_available, tone: s.booked ? Tone.accent : Tone.success),
@@ -150,12 +150,23 @@ class _AddSlotSheetState extends State<_AddSlotSheet> {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    final fieldStyle = OutlinedButton.styleFrom(
+      minimumSize: const Size(0, 56),
+      alignment: AlignmentDirectional.centerStart,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.field)),
+    );
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 0, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Text('موعد جديد (30 دقيقة)', style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 16),
+        Row(children: [
+          const IconTile(Icons.add_alarm_rounded, size: 40),
+          const SizedBox(width: 12),
+          Expanded(child: Text('موعد جديد (30 دقيقة)', style: Theme.of(context).textTheme.titleLarge)),
+        ]),
+        const SizedBox(height: 18),
         OutlinedButton.icon(
+          style: fieldStyle,
           icon: const Icon(Icons.calendar_today),
           label: Text(_day == null ? 'اختر اليوم' : formatDay(_day!)),
           onPressed: () async {
@@ -170,6 +181,7 @@ class _AddSlotSheetState extends State<_AddSlotSheet> {
         ),
         const SizedBox(height: 10),
         OutlinedButton.icon(
+          style: fieldStyle,
           icon: const Icon(Icons.access_time),
           label: Text(_time == null ? 'اختر وقت البداية' : _time!.format(context)),
           onPressed: () async {

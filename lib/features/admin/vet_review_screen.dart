@@ -65,41 +65,60 @@ class _VetReviewScreenState extends State<VetReviewScreen> {
           builder: (context, v, _) {
             if (v == null) return const EmptyState(icon: Icons.task_alt, message: 'هذا الطلب لم يعد بانتظار التحقق.');
             final isImage = !v.licensePath.toLowerCase().endsWith('.pdf');
-            return ListView(padding: const EdgeInsets.all(16), children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(children: [
-                    InfoRow('الاسم', v.fullName),
-                    InfoRow('البريد', v.email),
-                    InfoRow('الجوال', v.mobile),
-                    InfoRow('رقم الترخيص', v.licenseNumber),
-                    InfoRow('ينتهي في', formatDate(v.licenseExpiry)),
-                    InfoRow('التخصصات', labelList(specialtyLabels, v.specialties)),
-                    InfoRow('الحيوانات', labelList(speciesLabels, v.animalTypes)),
-                    InfoRow('اللغات', labelList(languageLabels, v.languages)),
-                    InfoRow('نبذة', v.bio),
-                  ]),
-                ),
+            final error = Theme.of(context).colorScheme.error;
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+              AppCard(
+                padding: const EdgeInsets.all(18),
+                child: Row(children: [
+                  DoctorAvatar(v.gender, radius: 32),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(v.fullName, style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(height: 6),
+                      TagChip(v.licenseNumber, icon: Icons.badge_outlined),
+                    ]),
+                  ),
+                ]),
               ),
+              InfoCard(children: [
+                InfoRow('الاسم', v.fullName),
+                InfoRow('البريد', v.email),
+                InfoRow('الجوال', v.mobile),
+                InfoRow('رقم الترخيص', v.licenseNumber),
+                InfoRow('ينتهي في', formatDate(v.licenseExpiry)),
+                InfoRow('التخصصات', labelList(specialtyLabels, v.specialties)),
+                InfoRow('الحيوانات', labelList(speciesLabels, v.animalTypes)),
+                InfoRow('اللغات', labelList(languageLabels, v.languages)),
+                InfoRow('نبذة', v.bio),
+              ]),
               const SectionTitle('ملف الترخيص'),
               if (isImage)
-                FutureBuilder<String>(
-                  future: signedUrl('licenses', v.licensePath),
-                  builder: (context, snap) => snap.hasData ? Image.network(snap.data!) : const LinearProgressIndicator(),
+                AppCard(
+                  padding: const EdgeInsets.all(8),
+                  child: FutureBuilder<String>(
+                    future: signedUrl('licenses', v.licensePath),
+                    builder: (context, snap) => snap.hasData
+                        ? ClipRRect(borderRadius: BorderRadius.circular(14), child: Image.network(snap.data!))
+                        : const LinearProgressIndicator(),
+                  ),
                 )
               else
-                OutlinedButton.icon(
+                FilledButton.tonalIcon(
+                  style: tonalButton,
                   onPressed: () => _openLicense(v),
                   icon: const Icon(Icons.picture_as_pdf_outlined),
                   label: const Text('فتح ملف PDF'),
                 ),
               const SizedBox(height: 24),
-              BusyButton(busy: _busy, onPressed: () => _decide(approve: true), label: 'قبول وتوثيق'),
+              BusyButton(busy: _busy, onPressed: () => _decide(approve: true), label: 'قبول وتوثيق', icon: Icons.verified_rounded),
               const SizedBox(height: 8),
               OutlinedButton(
                 onPressed: _busy ? null : () => _decide(approve: false),
-                style: OutlinedButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: error,
+                  side: BorderSide(color: error.withValues(alpha: 0.4), width: 1.2),
+                ),
                 child: const Text('رفض'),
               ),
             ]);

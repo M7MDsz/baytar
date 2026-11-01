@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../app/theme.dart';
 import '../../core/catalog.dart';
 import '../../core/errors.dart';
 import '../../core/formatting.dart';
@@ -144,13 +145,28 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Form(
               key: _form,
-              child: ListView(padding: const EdgeInsets.all(16), children: [
+              child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
                 Center(
                   child: GestureDetector(
                     onTap: _pickPhoto,
-                    child: _newPhoto != null
-                        ? CircleAvatar(radius: 44, backgroundImage: FileImage(_newPhoto!))
-                        : AnimalPhoto(path: _photoPath, radius: 44),
+                    child: Stack(clipBehavior: Clip.none, children: [
+                      _newPhoto != null
+                          ? CircleAvatar(radius: 52, backgroundImage: FileImage(_newPhoto!))
+                          : AnimalPhoto(path: _photoPath, species: _species, radius: 52),
+                      PositionedDirectional(
+                        bottom: 0,
+                        end: -2,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Palette.juniper,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Palette.canvas, width: 3),
+                          ),
+                          child: const Icon(Icons.photo_camera_outlined, size: 18, color: Colors.white),
+                        ),
+                      ),
+                    ]),
                   ),
                 ),
                 TextButton.icon(
@@ -158,98 +174,108 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
                   icon: const Icon(Icons.photo_camera_outlined),
                   label: const Text('صورة الحيوان (اختياري)'),
                 ),
-                gap,
-                TextFormField(
-                  controller: _name,
-                  decoration: InputDecoration(labelText: requiredLabel('الاسم')),
-                  validator: (v) => requiredText(v, 'اسم الحيوان'),
-                ),
-                gap,
-                DropdownButtonFormField<String>(
-                  initialValue: _species,
-                  decoration: InputDecoration(labelText: requiredLabel('النوع')),
-                  items: [
-                    for (final e in speciesLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value)),
-                  ],
-                  onChanged: (v) => setState(() => _species = v),
-                  validator: (v) => requiredChoice(v, 'نوع الحيوان'),
-                ),
-                gap,
-                TextFormField(controller: _breed, decoration: const InputDecoration(labelText: 'السلالة')),
-                gap,
-                FormField<String>(
-                  initialValue: _sex,
-                  validator: (_) => requiredChoice(_sex, 'الجنس'),
-                  builder: (field) => InputDecorator(
-                    decoration: InputDecoration(labelText: requiredLabel('الجنس'), errorText: field.errorText),
-                    child: SegmentedButton<String>(
-                      emptySelectionAllowed: true,
-                      segments: [
-                        for (final e in sexLabels.entries) ButtonSegment(value: e.key, label: Text(e.value)),
+                const SizedBox(height: 4),
+                AppCard(
+                  padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    TextFormField(
+                      controller: _name,
+                      decoration: InputDecoration(labelText: requiredLabel('الاسم')),
+                      validator: (v) => requiredText(v, 'اسم الحيوان'),
+                    ),
+                    gap,
+                    DropdownButtonFormField<String>(
+                      initialValue: _species,
+                      decoration: InputDecoration(labelText: requiredLabel('النوع')),
+                      items: [
+                        for (final e in speciesLabels.entries) DropdownMenuItem(value: e.key, child: Text(e.value)),
                       ],
-                      selected: {?_sex},
-                      onSelectionChanged: (s) => setState(() => _sex = s.firstOrNull),
+                      onChanged: (v) => setState(() => _species = v),
+                      validator: (v) => requiredChoice(v, 'نوع الحيوان'),
                     ),
-                  ),
-                ),
-                gap,
-                FormField<void>(
-                  validator: (_) => ageOrBirthDate(age: _age.text, birthDate: _birthDate),
-                  builder: (field) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    Row(children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _pickBirthDate,
-                          icon: const Icon(Icons.cake_outlined),
-                          label: Text(_birthDate == null ? 'تاريخ الميلاد' : formatDate(_birthDate!)),
-                        ),
-                      ),
-                      if (_birthDate != null)
-                        IconButton(
-                          tooltip: 'مسح التاريخ',
-                          onPressed: () => setState(() => _birthDate = null),
-                          icon: const Icon(Icons.close),
-                        ),
-                      const Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('أو')),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _age,
-                          enabled: _birthDate == null,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(labelText: 'العمر بالسنوات'),
-                        ),
-                      ),
-                    ]),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(
-                        field.errorText ?? 'العمر أو تاريخ الميلاد مطلوب *',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: field.hasError
-                              ? Theme.of(context).colorScheme.error
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                    gap,
+                    TextFormField(controller: _breed, decoration: const InputDecoration(labelText: 'السلالة')),
+                    gap,
+                    FormField<String>(
+                      initialValue: _sex,
+                      validator: (_) => requiredChoice(_sex, 'الجنس'),
+                      builder: (field) => InputDecorator(
+                        decoration: InputDecoration(labelText: requiredLabel('الجنس'), errorText: field.errorText),
+                        child: SegmentedButton<String>(
+                          emptySelectionAllowed: true,
+                          segments: [
+                            for (final e in sexLabels.entries) ButtonSegment(value: e.key, label: Text(e.value)),
+                          ],
+                          selected: {?_sex},
+                          onSelectionChanged: (s) => setState(() => _sex = s.firstOrNull),
                         ),
                       ),
                     ),
+                    gap,
+                    FormField<void>(
+                      validator: (_) => ageOrBirthDate(age: _age.text, birthDate: _birthDate),
+                      builder: (field) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                        Row(children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                minimumSize: const Size(0, 56),
+                                padding: const EdgeInsets.symmetric(horizontal: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.field)),
+                              ),
+                              onPressed: _pickBirthDate,
+                              icon: const Icon(Icons.cake_outlined),
+                              label: Text(_birthDate == null ? 'تاريخ الميلاد' : formatDate(_birthDate!)),
+                            ),
+                          ),
+                          if (_birthDate != null)
+                            IconButton(
+                              tooltip: 'مسح التاريخ',
+                              onPressed: () => setState(() => _birthDate = null),
+                              icon: const Icon(Icons.close),
+                            ),
+                          const Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('أو')),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _age,
+                              enabled: _birthDate == null,
+                              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                              decoration: const InputDecoration(labelText: 'العمر بالسنوات'),
+                            ),
+                          ),
+                        ]),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            field.errorText ?? 'العمر أو تاريخ الميلاد مطلوب *',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: field.hasError
+                                  ? Theme.of(context).colorScheme.error
+                                  : Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ]),
+                    ),
+                    gap,
+                    TextFormField(
+                      controller: _weight,
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(labelText: 'الوزن (كجم)'),
+                      validator: (v) => optionalPositiveNumber(v, 'الوزن'),
+                    ),
+                    gap,
+                    TextFormField(
+                      controller: _conditions,
+                      maxLines: 2,
+                      decoration: const InputDecoration(labelText: 'أمراض أو حالات معروفة'),
+                    ),
+                    gap,
+                    TextFormField(controller: _allergies, maxLines: 2, decoration: const InputDecoration(labelText: 'الحساسية')),
                   ]),
                 ),
-                gap,
-                TextFormField(
-                  controller: _weight,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(labelText: 'الوزن (كجم)'),
-                  validator: (v) => optionalPositiveNumber(v, 'الوزن'),
-                ),
-                gap,
-                TextFormField(
-                  controller: _conditions,
-                  maxLines: 2,
-                  decoration: const InputDecoration(labelText: 'أمراض أو حالات معروفة'),
-                ),
-                gap,
-                TextFormField(controller: _allergies, maxLines: 2, decoration: const InputDecoration(labelText: 'الحساسية')),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 BusyButton(busy: _saving, onPressed: _save, label: 'حفظ'),
               ]),
             ),

@@ -52,23 +52,33 @@ class _ReferralScreenState extends State<ReferralScreen> {
         appBar: AppBar(title: const Text('إحالة لزيارة عيادة')),
         body: Form(
           key: _form,
-          child: ListView(padding: const EdgeInsets.all(16), children: [
-            TextFormField(
-              controller: _reason,
-              minLines: 2,
-              maxLines: 5,
-              decoration: InputDecoration(labelText: requiredLabel('سبب الإحالة')),
-              validator: (v) => (v ?? '').trim().isEmpty ? 'أدخل سبب الإحالة' : null,
+          child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+            AppCard(
+              padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                const Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: IconTile(Icons.local_hospital_outlined, tone: Tone.accent, size: 48),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _reason,
+                  minLines: 2,
+                  maxLines: 5,
+                  decoration: InputDecoration(labelText: requiredLabel('سبب الإحالة')),
+                  validator: (v) => (v ?? '').trim().isEmpty ? 'أدخل سبب الإحالة' : null,
+                ),
+                const SizedBox(height: 14),
+                TextFormField(
+                  controller: _instructions,
+                  minLines: 3,
+                  maxLines: 8,
+                  decoration: InputDecoration(labelText: requiredLabel('تعليمات للمالك')),
+                  validator: (v) => (v ?? '').trim().isEmpty ? 'أدخل التعليمات' : null,
+                ),
+              ]),
             ),
-            const SizedBox(height: 14),
-            TextFormField(
-              controller: _instructions,
-              minLines: 3,
-              maxLines: 8,
-              decoration: InputDecoration(labelText: requiredLabel('تعليمات للمالك')),
-              validator: (v) => (v ?? '').trim().isEmpty ? 'أدخل التعليمات' : null,
-            ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             BusyButton(busy: _busy, onPressed: _save, label: 'حفظ الإحالة'),
           ]),
         ),
