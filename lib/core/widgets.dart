@@ -364,6 +364,70 @@ class NameAvatar extends StatelessWidget {
       );
 }
 
+/// Round illustration on a soft tinted disc (art lives in assets/avatars, sources in assets/avatars/src).
+class _IllustratedAvatar extends StatelessWidget {
+  const _IllustratedAvatar({required this.asset, required this.background, required this.radius});
+
+  final String asset;
+  final Color background;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+        child: Container(
+          width: radius * 2,
+          height: radius * 2,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: background,
+            border: Border.all(color: Palette.surface, width: radius > 32 ? 3 : 2),
+            boxShadow: const [BoxShadow(color: Color(0x140E2A25), blurRadius: 6, offset: Offset(0, 2))],
+          ),
+          child: ClipOval(child: Image.asset(asset, fit: BoxFit.cover, excludeFromSemantics: true)),
+        ),
+      );
+}
+
+/// Cartoon avatar for an animal species code from catalog.dart; unknown codes show a paw.
+class SpeciesAvatar extends StatelessWidget {
+  const SpeciesAvatar(this.species, {super.key, this.radius = 24});
+
+  final String? species;
+  final double radius;
+
+  static const _drawn = {'cat', 'dog', 'bird', 'horse', 'camel', 'sheep_goat', 'cattle', 'other'};
+
+  @override
+  Widget build(BuildContext context) {
+    final code = _drawn.contains(species) ? species! : 'other';
+    final warm = const {'dog', 'horse', 'sheep_goat'}.contains(code);
+    return _IllustratedAvatar(
+      asset: 'assets/avatars/animal_$code.png',
+      background: code == 'other' ? Palette.sand : (warm ? Palette.amberSoft : Palette.juniperSoft),
+      radius: radius,
+    );
+  }
+}
+
+/// Cartoon veterinarian: a doctor in a ghutra for male, in a hijab for female, neutral when unknown.
+class DoctorAvatar extends StatelessWidget {
+  const DoctorAvatar(this.gender, {super.key, this.radius = 28});
+
+  final String? gender;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) => _IllustratedAvatar(
+        asset: switch (gender) {
+          'male' => 'assets/avatars/doctor_male.png',
+          'female' => 'assets/avatars/doctor_female.png',
+          _ => 'assets/avatars/doctor_neutral.png',
+        },
+        background: gender == 'female' ? Palette.amberSoft : Palette.juniperSoft,
+        radius: radius,
+      );
+}
+
 /// Card that lists [InfoRow]s with hairlines between them. Rows without a value are left out.
 class InfoCard extends StatelessWidget {
   const InfoCard({super.key, required this.children, this.title});
