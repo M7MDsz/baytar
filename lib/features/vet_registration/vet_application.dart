@@ -30,6 +30,7 @@ class VetApplication {
     required this.specialties,
     required this.animalTypes,
     required this.languages,
+    required this.gender,
     this.bio,
   });
 
@@ -39,6 +40,9 @@ class VetApplication {
   final List<String> specialties;
   final List<String> animalTypes;
   final List<String> languages;
+
+  /// male or female.
+  final String gender;
   final String? bio;
 
   static Future<bool> licenseNumberTaken(String number) async =>
@@ -62,6 +66,7 @@ class VetApplication {
       'p_animal_types': animalTypes,
       'p_languages': languages,
       'p_bio': bio,
+      'p_gender': gender,
     });
   }
 }

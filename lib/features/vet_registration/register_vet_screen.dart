@@ -10,6 +10,7 @@ import '../../core/errors.dart';
 import '../../core/formatting.dart';
 import '../../core/session.dart';
 import '../../core/storage.dart';
+import '../../core/validators.dart';
 import '../../core/widgets.dart';
 import '../auth/auth_repository.dart';
 import '../auth/auth_validators.dart';
@@ -40,6 +41,7 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
   final _specialties = <String>{};
   final _animalTypes = <String>{};
   final _languages = <String>{'ar'};
+  String? _gender;
   bool _terms = false;
   bool _busy = false;
 
@@ -64,6 +66,7 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
         specialties: _specialties.toList(),
         animalTypes: _animalTypes.toList(),
         languages: _languages.toList(),
+        gender: _gender!,
         bio: _bio.text.trim().isEmpty ? null : _bio.text.trim(),
       );
 
@@ -139,6 +142,33 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
   Widget build(BuildContext context) {
     const gap = SizedBox(height: 14);
     final now = DateTime.now();
+    // Required; decides the doctor avatar owners see (طبيب or طبيبة).
+    final genderField = FormField<String>(
+      validator: (_) => requiredChoice(_gender, 'الجنس'),
+      builder: (field) => InputDecorator(
+        decoration: InputDecoration(
+          labelText: requiredLabel('الجنس'),
+          errorText: field.errorText,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          filled: false,
+          contentPadding: const EdgeInsets.only(top: 8),
+        ),
+        child: SegmentedButton<String>(
+          emptySelectionAllowed: true,
+          showSelectedIcon: false,
+          segments: const [
+            ButtonSegment(value: 'male', label: Text('طبيب'), icon: Icon(Icons.man_outlined)),
+            ButtonSegment(value: 'female', label: Text('طبيبة'), icon: Icon(Icons.woman_outlined)),
+          ],
+          selected: {?_gender},
+          onSelectionChanged: (s) {
+            setState(() => _gender = s.firstOrNull);
+            field.didChange(_gender);
+          },
+        ),
+      ),
+    );
     return Scaffold(
       appBar: AppBar(title: Text(widget.completeOnly ? 'إكمال بيانات الترخيص' : 'تسجيل طبيب بيطري')),
       body: Form(
@@ -149,6 +179,8 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
               padding: const EdgeInsets.fromLTRB(18, 22, 18, 10),
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 TextFormField(controller: _name, decoration: InputDecoration(labelText: requiredLabel('الاسم الكامل')), validator: validateFullName),
+                gap,
+                genderField,
                 gap,
                 TextFormField(
                   controller: _email,
@@ -181,6 +213,7 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
           AppCard(
             padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
             child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              if (widget.completeOnly) ...[genderField, gap],
               TextFormField(
                 controller: _license,
                 decoration: InputDecoration(labelText: requiredLabel('رقم الترخيص المهني')),

@@ -28,6 +28,7 @@ class CaseRecord {
     required this.status,
     required this.createdAt,
     this.animalName,
+    this.animalSpecies,
     this.caseNumber,
     this.description,
     this.voicePath,
@@ -38,6 +39,7 @@ class CaseRecord {
   final String id;
   final String animalId;
   final String? animalName;
+  final String? animalSpecies;
   final String? caseNumber;
   final String? description;
   final String? voicePath;
@@ -54,6 +56,7 @@ class CaseRecord {
         id: m['id'] as String,
         animalId: m['animal_id'] as String,
         animalName: (m['animals'] as Map<String, dynamic>?)?['name'] as String?,
+        animalSpecies: (m['animals'] as Map<String, dynamic>?)?['species'] as String?,
         caseNumber: m['case_number'] as String?,
         description: m['description'] as String?,
         voicePath: m['voice_path'] as String?,

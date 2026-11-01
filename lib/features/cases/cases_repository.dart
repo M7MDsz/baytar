@@ -9,7 +9,7 @@ import 'media_rules.dart';
 const mediaBucket = 'case-media';
 
 class CasesRepository {
-  static const _select = '*, animals(name), case_media(*)';
+  static const _select = '*, animals(name, species), case_media(*)';
 
   Future<List<CaseRecord>> mine({required bool drafts}) async {
     final query = db.from('cases').select(_select).eq('owner_id', currentUserId!);
