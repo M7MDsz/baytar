@@ -123,7 +123,7 @@ class _VetsScreenState extends State<VetsScreen> {
                   padding: EdgeInsets.only(bottom: 8),
                   child: NoticeBanner('لا يوجد طبيب بيطري متاح حالياً. ستظهر المواعيد عند نشرها.', icon: Icons.event_busy),
                 ),
-              for (final v in vets) VetCard(v),
+              for (final (i, v) in vets.indexed) Entrance(index: i, child: VetCard(v)),
             ]);
           },
         ),

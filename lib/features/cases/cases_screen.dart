@@ -41,36 +41,39 @@ class _CasesScreenState extends State<CasesScreen> {
       ]);
     }
     return ListView(padding: pagePadding(context, bottom: 96), children: [
-      for (final c in cases)
-        ListCard(
-          leading: Stack(clipBehavior: Clip.none, children: [
-            SpeciesAvatar(c.animalSpecies, radius: 26),
-            PositionedDirectional(
-              bottom: -4,
-              end: -4,
-              child: Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: drafts ? Palette.accentSoft : Palette.juniperSoft,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Palette.surface, width: 2),
-                ),
-                child: Icon(
-                  drafts ? Icons.edit_note : Icons.assignment_outlined,
-                  size: 14,
-                  color: drafts ? Palette.accentDeep : Palette.juniper,
+      for (final (i, c) in cases.indexed)
+        Entrance(
+          index: i,
+          child: ListCard(
+            leading: Stack(clipBehavior: Clip.none, children: [
+              SpeciesAvatar(c.animalSpecies, radius: 26),
+              PositionedDirectional(
+                bottom: -4,
+                end: -4,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: drafts ? Palette.accentSoft : Palette.juniperSoft,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Palette.surface, width: 2),
+                  ),
+                  child: Icon(
+                    drafts ? Icons.edit_note : Icons.assignment_outlined,
+                    size: 14,
+                    color: drafts ? Palette.accentDeep : Palette.juniper,
+                  ),
                 ),
               ),
-            ),
-          ]),
-          title: c.animalName ?? '',
-          subtitle: [
-            if (c.caseNumber != null) c.caseNumber!,
-            formatDayTime(c.submittedAt ?? c.createdAt),
-            if ((c.description ?? '').isNotEmpty) c.description!,
-          ].join('\n'),
-          subtitleMaxLines: 3,
-          onTap: () => _open(drafts ? '/cases/${c.id}/edit' : '/cases/${c.id}'),
+            ]),
+            title: c.animalName ?? '',
+            subtitle: [
+              if (c.caseNumber != null) c.caseNumber!,
+              formatDayTime(c.submittedAt ?? c.createdAt),
+              if ((c.description ?? '').isNotEmpty) c.description!,
+            ].join('\n'),
+            subtitleMaxLines: 3,
+            onTap: () => _open(drafts ? '/cases/${c.id}/edit' : '/cases/${c.id}'),
+          ),
         ),
     ]);
   }

@@ -49,7 +49,7 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
               AppCard(
                 padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
                 child: Column(children: [
-                  AnimalPhoto(path: a.photoPath, species: a.species, radius: 52),
+                  Hero(tag: 'animal-${a.id}', child: AnimalPhoto(path: a.photoPath, species: a.species, radius: 52)),
                   const SizedBox(height: 12),
                   Text(a.name, style: text.headlineSmall, textAlign: TextAlign.center),
                   const SizedBox(height: 8),

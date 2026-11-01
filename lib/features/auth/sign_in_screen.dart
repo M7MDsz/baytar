@@ -64,66 +64,69 @@ class _SignInScreenState extends State<SignInScreen> {
               const _Hero(),
               Transform.translate(
                 offset: const Offset(0, -44),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                    AppCard(
-                      padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                        TextFormField(
-                          controller: _email,
-                          keyboardType: TextInputType.emailAddress,
-                          textDirection: TextDirection.ltr,
-                          decoration: const InputDecoration(
-                            labelText: 'البريد الإلكتروني',
-                            prefixIcon: Icon(Icons.mail_outline),
+                child: Entrance(
+                  index: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                      AppCard(
+                        padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                          TextFormField(
+                            controller: _email,
+                            keyboardType: TextInputType.emailAddress,
+                            textDirection: TextDirection.ltr,
+                            decoration: const InputDecoration(
+                              labelText: 'البريد الإلكتروني',
+                              prefixIcon: Icon(Icons.mail_outline),
+                            ),
+                            validator: validateEmail,
                           ),
-                          validator: validateEmail,
-                        ),
-                        const SizedBox(height: 14),
-                        TextFormField(
-                          controller: _password,
-                          obscureText: _hidden,
-                          textDirection: TextDirection.ltr,
-                          decoration: InputDecoration(
-                            labelText: 'كلمة المرور',
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            suffixIcon: IconButton(
-                              onPressed: () => setState(() => _hidden = !_hidden),
-                              icon: Icon(_hidden ? Icons.visibility : Icons.visibility_off),
+                          const SizedBox(height: 14),
+                          TextFormField(
+                            controller: _password,
+                            obscureText: _hidden,
+                            textDirection: TextDirection.ltr,
+                            decoration: InputDecoration(
+                              labelText: 'كلمة المرور',
+                              prefixIcon: const Icon(Icons.lock_outline),
+                              suffixIcon: IconButton(
+                                onPressed: () => setState(() => _hidden = !_hidden),
+                                icon: Icon(_hidden ? Icons.visibility : Icons.visibility_off),
+                              ),
+                            ),
+                            validator: (v) => (v ?? '').isEmpty ? 'أدخل كلمة المرور' : null,
+                            onFieldSubmitted: (_) => _submit(),
+                          ),
+                          Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: TextButton(
+                              onPressed: () => context.push('/forgot-password'),
+                              child: const Text('نسيت كلمة المرور؟'),
                             ),
                           ),
-                          validator: (v) => (v ?? '').isEmpty ? 'أدخل كلمة المرور' : null,
-                          onFieldSubmitted: (_) => _submit(),
-                        ),
-                        Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          child: TextButton(
-                            onPressed: () => context.push('/forgot-password'),
-                            child: const Text('نسيت كلمة المرور؟'),
-                          ),
-                        ),
-                        if (_error != null)
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: NoticeBanner(_error!, tone: Tone.danger, icon: Icons.error_outline),
-                          ),
-                        BusyButton(busy: _busy, onPressed: _submit, label: 'تسجيل الدخول'),
-                      ]),
-                    ),
-                    const SizedBox(height: 22),
-                    OutlinedButton.icon(
-                      onPressed: () => context.push('/sign-up'),
-                      icon: const Icon(Icons.pets),
-                      label: const Text('إنشاء حساب مالك حيوان'),
-                    ),
-                    const SizedBox(height: 6),
-                    TextButton.icon(
-                      onPressed: () => context.push('/register/vet'),
-                      icon: const Icon(Icons.medical_services_outlined, size: 20),
-                      label: const Text('أنا طبيب بيطري، أريد التسجيل'),
-                    ),
-                  ]),
+                          if (_error != null)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: NoticeBanner(_error!, tone: Tone.danger, icon: Icons.error_outline),
+                            ),
+                          BusyButton(busy: _busy, onPressed: _submit, label: 'تسجيل الدخول'),
+                        ]),
+                      ),
+                      const SizedBox(height: 22),
+                      OutlinedButton.icon(
+                        onPressed: () => context.push('/sign-up'),
+                        icon: const Icon(Icons.pets),
+                        label: const Text('إنشاء حساب مالك حيوان'),
+                      ),
+                      const SizedBox(height: 6),
+                      TextButton.icon(
+                        onPressed: () => context.push('/register/vet'),
+                        icon: const Icon(Icons.medical_services_outlined, size: 20),
+                        label: const Text('أنا طبيب بيطري، أريد التسجيل'),
+                      ),
+                    ]),
+                  ),
                 ),
               ),
             ]),
@@ -153,21 +156,36 @@ class _Hero extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 36, 24, 76),
           child: Column(children: [
-            Container(
-              width: 104,
-              height: 104,
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: Palette.surface,
-                shape: BoxShape.circle,
-                border: Border.all(color: Palette.accent, width: 3),
+            // The logo settles in with a soft scale and fade, then the name and the form follow.
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: MediaQuery.disableAnimationsOf(context) ? 1 : 0, end: 1),
+              duration: const Duration(milliseconds: 650),
+              curve: Curves.easeOutBack,
+              builder: (context, t, child) => Opacity(
+                opacity: t.clamp(0.0, 1.0),
+                child: Transform.scale(scale: 0.8 + 0.2 * t, child: child),
               ),
-              child: Image.asset('assets/logo/baytar-mark.png'),
+              child: Container(
+                width: 104,
+                height: 104,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Palette.surface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Palette.accent, width: 3),
+                ),
+                child: Image.asset('assets/logo/baytar-mark.png'),
+              ),
             ),
             const SizedBox(height: 16),
-            Text('بيطار', style: text.displaySmall!.copyWith(color: Colors.white)),
-            const SizedBox(height: 2),
-            Text('طبيبك البيطري عن بُعد', style: text.bodyLarge!.copyWith(color: Colors.white.withValues(alpha: 0.85))),
+            Entrance(
+              index: 2,
+              child: Column(children: [
+                Text('بيطار', style: text.displaySmall!.copyWith(color: Colors.white)),
+                const SizedBox(height: 2),
+                Text('طبيبك البيطري عن بُعد', style: text.bodyLarge!.copyWith(color: Colors.white.withValues(alpha: 0.85))),
+              ]),
+            ),
           ]),
         ),
       ),

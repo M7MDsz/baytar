@@ -43,7 +43,7 @@ class _BookingScreenState extends State<BookingScreen> {
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          icon: const Icon(Icons.check_circle, size: 48),
+          icon: const SuccessCheck(),
           title: const Text('تم تأكيد الحجز'),
           content: Text('موعدك ${formatDayTime(_slot!.startsAt)}${widget.vetName == null ? '' : ' مع ${widget.vetName}'}.'),
           actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً'))],

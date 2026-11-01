@@ -51,12 +51,18 @@ class _AnimalsScreenState extends State<AnimalsScreen> {
               : ListView(
                   padding: pagePadding(context, bottom: 96),
                   children: [
-                    for (final a in animals)
-                      ListCard(
-                        leading: AnimalPhoto(path: a.photoPath, species: a.species, radius: 28),
-                        title: a.name,
-                        subtitle: [a.speciesLabel, a.sexLabel, a.ageLabel].where((s) => s.isNotEmpty).join(' · '),
-                        onTap: () => _open('/animals/${a.id}'),
+                    for (final (i, a) in animals.indexed)
+                      Entrance(
+                        index: i,
+                        child: ListCard(
+                          leading: Hero(
+                            tag: 'animal-${a.id}',
+                            child: AnimalPhoto(path: a.photoPath, species: a.species, radius: 28),
+                          ),
+                          title: a.name,
+                          subtitle: [a.speciesLabel, a.sexLabel, a.ageLabel].where((s) => s.isNotEmpty).join(' · '),
+                          onTap: () => _open('/animals/${a.id}'),
+                        ),
                       ),
                   ],
                 ),

@@ -62,13 +62,16 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
           ),
         ])
       : ListView(padding: pagePadding(context), children: [
-          for (final a in items)
-            ListCard(
-              onTap: () => _open(a),
-              leading: VetWithAnimal(vetGender: a.vetGender, species: a.animalSpecies),
-              title: '${a.animalName} · ${a.vetName}',
-              subtitle: formatDayTime(a.startsAt),
-              trailing: StatusPill(a.statusLabel, tone: appointmentTone(a)),
+          for (final (i, a) in items.indexed)
+            Entrance(
+              index: i,
+              child: ListCard(
+                onTap: () => _open(a),
+                leading: VetWithAnimal(vetGender: a.vetGender, species: a.animalSpecies),
+                title: '${a.animalName} · ${a.vetName}',
+                subtitle: formatDayTime(a.startsAt),
+                trailing: StatusPill(a.statusLabel, tone: appointmentTone(a)),
+              ),
             ),
         ]);
 

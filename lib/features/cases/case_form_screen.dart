@@ -120,7 +120,7 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          icon: const Icon(Icons.check_circle, size: 48),
+          icon: const SuccessCheck(),
           title: const Text('تم إرسال الحالة'),
           content: Text('رقم الحالة: $caseNumber\nيمكنك الآن حجز موعد مع طبيب بيطري.'),
           actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً'))],
