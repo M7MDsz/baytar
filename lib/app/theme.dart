@@ -44,6 +44,9 @@ abstract final class Palette {
   static const success = Color(0xFF1D7348);
   static const successSoft = Color(0xFFE2F2E8);
   static const danger = Color(0xFFB3261E);
+
+  /// Unread-count badge: rose with white digits (4.7:1).
+  static const alert = Color(0xFFE11D48);
   static const dangerSoft = Color(0xFFFBE9E7);
 }
 
