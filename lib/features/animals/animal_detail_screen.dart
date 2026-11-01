@@ -44,38 +44,39 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
           load: _load,
           builder: (context, data, _) {
             final (a, history) = data;
-            return ListView(padding: const EdgeInsets.all(16), children: [
-              Center(child: AnimalPhoto(path: a.photoPath, radius: 48)),
-              const SizedBox(height: 12),
-              Center(child: Text(a.name, style: Theme.of(context).textTheme.headlineSmall)),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(children: [
-                    InfoRow('النوع', a.speciesLabel),
-                    InfoRow('السلالة', a.breed),
-                    InfoRow('الجنس', a.sexLabel),
-                    InfoRow('العمر', a.ageLabel),
-                    InfoRow('تاريخ الميلاد', a.birthDate == null ? null : formatDate(a.birthDate!)),
-                    InfoRow('الوزن', a.weightKg == null ? null : '${a.weightKg} كجم'),
-                    InfoRow('حالات معروفة', a.conditions),
-                    InfoRow('الحساسية', a.allergies),
+            final text = Theme.of(context).textTheme;
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+              AppCard(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                child: Column(children: [
+                  Hero(tag: 'animal-${a.id}', child: AnimalPhoto(path: a.photoPath, species: a.species, radius: 52)),
+                  const SizedBox(height: 12),
+                  Text(a.name, style: text.headlineSmall, textAlign: TextAlign.center),
+                  const SizedBox(height: 8),
+                  Wrap(alignment: WrapAlignment.center, spacing: 6, runSpacing: 6, children: [
+                    for (final t in [a.speciesLabel, a.sexLabel, a.ageLabel].where((s) => s.isNotEmpty)) TagChip(t),
                   ]),
-                ),
+                ]),
               ),
+              InfoCard(children: [
+                InfoRow('النوع', a.speciesLabel),
+                InfoRow('السلالة', a.breed),
+                InfoRow('الجنس', a.sexLabel),
+                InfoRow('العمر', a.ageLabel),
+                InfoRow('تاريخ الميلاد', a.birthDate == null ? null : formatDate(a.birthDate!)),
+                InfoRow('الوزن', a.weightKg == null ? null : '${a.weightKg} كجم'),
+                InfoRow('حالات معروفة', a.conditions),
+                InfoRow('الحساسية', a.allergies),
+              ]),
               const SectionTitle('سجل الاستشارات'),
               if (history.isEmpty)
-                const Padding(padding: EdgeInsets.all(16), child: Text('لا توجد استشارات مكتملة بعد.')),
+                const NoticeBanner('لا توجد استشارات مكتملة بعد.', icon: Icons.history, tone: Tone.neutral),
               for (final o in history)
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.assignment_turned_in_outlined),
-                    title: Text(formatDay(o.consultationDate)),
-                    subtitle: Text(o.vetName ?? ''),
-                    trailing: const Icon(Icons.chevron_left),
-                    onTap: () => context.push('/outcomes/${o.appointmentId}'),
-                  ),
+                ListCard(
+                  leading: const IconTile(Icons.assignment_turned_in_outlined, tone: Tone.success),
+                  title: formatDay(o.consultationDate),
+                  subtitle: o.vetName ?? '',
+                  onTap: () => context.push('/outcomes/${o.appointmentId}'),
                 ),
             ]);
           },

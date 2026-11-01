@@ -100,39 +100,51 @@ class _OutcomeFormScreenState extends State<OutcomeFormScreen> {
       appBar: AppBar(title: const Text('توثيق نتيجة الاستشارة')),
       body: Form(
         key: _form,
-        child: ListView(padding: const EdgeInsets.all(16), children: [
+        child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
           if (_approved)
-            const Card(child: ListTile(leading: Icon(Icons.lock_outline), title: Text('تم اعتماد هذه النتيجة.'))),
-          TextFormField(
-            controller: _findings,
-            readOnly: _approved,
-            minLines: 4,
-            maxLines: 12,
-            decoration: InputDecoration(labelText: requiredLabel('التشخيص والملاحظات السريرية')),
-            validator: (v) => _requiredOnFinal(v, 'التشخيص'),
+            const Padding(
+              padding: EdgeInsets.only(bottom: 8),
+              child: NoticeBanner('تم اعتماد هذه النتيجة.', icon: Icons.lock_outline_rounded, tone: Tone.success),
+            ),
+          AppCard(
+            padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              TextFormField(
+                controller: _findings,
+                readOnly: _approved,
+                minLines: 4,
+                maxLines: 12,
+                decoration: InputDecoration(labelText: requiredLabel('التشخيص والملاحظات السريرية')),
+                validator: (v) => _requiredOnFinal(v, 'التشخيص'),
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _guidance,
+                readOnly: _approved,
+                minLines: 3,
+                maxLines: 10,
+                decoration: InputDecoration(labelText: requiredLabel('التوجيهات للمالك')),
+                validator: (v) => _requiredOnFinal(v, 'التوجيهات'),
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _notes,
+                readOnly: _approved,
+                minLines: 2,
+                maxLines: 6,
+                decoration: const InputDecoration(labelText: 'ملاحظات إضافية للمالك'),
+              ),
+            ]),
           ),
-          const SizedBox(height: 14),
-          TextFormField(
-            controller: _guidance,
-            readOnly: _approved,
-            minLines: 3,
-            maxLines: 10,
-            decoration: InputDecoration(labelText: requiredLabel('التوجيهات للمالك')),
-            validator: (v) => _requiredOnFinal(v, 'التوجيهات'),
-          ),
-          const SizedBox(height: 14),
-          TextFormField(
-            controller: _notes,
-            readOnly: _approved,
-            minLines: 2,
-            maxLines: 6,
-            decoration: const InputDecoration(labelText: 'ملاحظات إضافية للمالك'),
-          ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           if (!_approved) ...[
-            BusyButton(busy: _busy, onPressed: () => _save(approve: true), label: 'اعتماد النتيجة'),
+            BusyButton(busy: _busy, onPressed: () => _save(approve: true), label: 'اعتماد النتيجة', icon: Icons.verified_rounded),
             const SizedBox(height: 8),
-            OutlinedButton(onPressed: _busy ? null : () => _save(approve: false), child: const Text('حفظ كمسودة')),
+            FilledButton.tonal(
+              style: tonalButton,
+              onPressed: _busy ? null : () => _save(approve: false),
+              child: const Text('حفظ كمسودة'),
+            ),
           ],
         ]),
       ),

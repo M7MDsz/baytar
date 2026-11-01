@@ -23,8 +23,11 @@ class _VetFiltersSheetState extends State<VetFiltersSheet> {
 
   Widget _group<T>(String title, Map<T, String> options, T? value, ValueChanged<T?> onChanged) =>
       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Padding(padding: const EdgeInsets.only(top: 14, bottom: 6), child: Text(title)),
-        Wrap(spacing: 8, runSpacing: 6, children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 18, bottom: 10),
+          child: Text(title, style: Theme.of(context).textTheme.titleSmall),
+        ),
+        Wrap(spacing: 8, runSpacing: 8, children: [
           for (final e in options.entries)
             FilterChip(
               label: Text(e.value),
@@ -37,14 +40,16 @@ class _VetFiltersSheetState extends State<VetFiltersSheet> {
   @override
   Widget build(BuildContext context) => SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
             Text('تصفية الأطباء', style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: 4),
+            const Divider(),
             _group('التخصص', specialtyLabels, _specialty, (v) => setState(() => _specialty = v)),
             _group('نوع الحيوان', speciesLabels, _animalType, (v) => setState(() => _animalType = v)),
             _group('اللغة', languageLabels, _language, (v) => setState(() => _language = v)),
             _group('متاح', availabilityLabels, _withinDays, (v) => setState(() => _withinDays = v)),
-            const SizedBox(height: 20),
+            const SizedBox(height: 28),
             FilledButton(
               onPressed: () => Navigator.pop(
                 context,

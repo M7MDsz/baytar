@@ -16,5 +16,6 @@ class PendingVet {
   List<String> get animalTypes => (data['animal_types'] as List).cast<String>();
   List<String> get languages => (data['languages'] as List).cast<String>();
   String? get bio => data['bio'] as String?;
+  String? get gender => data['gender'] as String?;
   DateTime get submittedAt => parseTs(data['created_at']);
 }

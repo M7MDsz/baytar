@@ -4,11 +4,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/catalog.dart';
 import '../../core/errors.dart';
 import '../../core/formatting.dart';
 import '../../core/session.dart';
 import '../../core/storage.dart';
+import '../../core/validators.dart';
 import '../../core/widgets.dart';
 import '../auth/auth_repository.dart';
 import '../auth/auth_validators.dart';
@@ -39,6 +41,7 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
   final _specialties = <String>{};
   final _animalTypes = <String>{};
   final _languages = <String>{'ar'};
+  String? _gender;
   bool _terms = false;
   bool _busy = false;
 
@@ -63,6 +66,7 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
         specialties: _specialties.toList(),
         animalTypes: _animalTypes.toList(),
         languages: _languages.toList(),
+        gender: _gender!,
         bio: _bio.text.trim().isEmpty ? null : _bio.text.trim(),
       );
 
@@ -106,8 +110,11 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
   Widget _chips(String title, Map<String, String> options, Set<String> selected) => FormField<void>(
         validator: (_) => selected.isEmpty ? 'اختر $title' : null,
         builder: (field) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Padding(padding: const EdgeInsets.only(top: 14, bottom: 6), child: Text(requiredLabel(title))),
-          Wrap(spacing: 8, runSpacing: 6, children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 18, bottom: 10),
+            child: Text(requiredLabel(title), style: Theme.of(context).textTheme.titleSmall),
+          ),
+          Wrap(spacing: 8, runSpacing: 8, children: [
             for (final e in options.entries)
               FilterChip(
                 label: Text(e.value),
@@ -116,7 +123,10 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
               ),
           ]),
           if (field.hasError)
-            Text(field.errorText!, style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text(field.errorText!, style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12.5)),
+            ),
         ]),
       );
 
@@ -132,92 +142,156 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
   Widget build(BuildContext context) {
     const gap = SizedBox(height: 14);
     final now = DateTime.now();
+    // Required; decides the doctor avatar owners see (طبيب or طبيبة).
+    final genderField = FormField<String>(
+      validator: (_) => requiredChoice(_gender, 'الجنس'),
+      builder: (field) => InputDecorator(
+        decoration: InputDecoration(
+          labelText: requiredLabel('الجنس'),
+          errorText: field.errorText,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          filled: false,
+          contentPadding: const EdgeInsets.only(top: 8),
+        ),
+        child: SegmentedButton<String>(
+          emptySelectionAllowed: true,
+          showSelectedIcon: false,
+          segments: const [
+            ButtonSegment(value: 'male', label: Text('طبيب'), icon: Icon(Icons.man_outlined)),
+            ButtonSegment(value: 'female', label: Text('طبيبة'), icon: Icon(Icons.woman_outlined)),
+          ],
+          selected: {?_gender},
+          onSelectionChanged: (s) {
+            setState(() => _gender = s.firstOrNull);
+            field.didChange(_gender);
+          },
+        ),
+      ),
+    );
     return Scaffold(
       appBar: AppBar(title: Text(widget.completeOnly ? 'إكمال بيانات الترخيص' : 'تسجيل طبيب بيطري')),
       body: Form(
         key: _form,
-        child: ListView(padding: const EdgeInsets.all(20), children: [
+        child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 32), children: [
           if (!widget.completeOnly) ...[
-            TextFormField(controller: _name, decoration: InputDecoration(labelText: requiredLabel('الاسم الكامل')), validator: validateFullName),
-            gap,
-            TextFormField(
-              controller: _email,
-              keyboardType: TextInputType.emailAddress,
-              textDirection: TextDirection.ltr,
-              decoration: InputDecoration(labelText: requiredLabel('البريد الإلكتروني')),
-              validator: validateEmail,
-            ),
-            gap,
-            TextFormField(
-              controller: _mobile,
-              keyboardType: TextInputType.phone,
-              textDirection: TextDirection.ltr,
-              maxLength: 10,
-              decoration: InputDecoration(labelText: requiredLabel('رقم الجوال'), hintText: '05XXXXXXXX'),
-              validator: validateMobile,
-            ),
-            gap,
-            TextFormField(
-              controller: _password,
-              obscureText: true,
-              textDirection: TextDirection.ltr,
-              decoration: InputDecoration(labelText: requiredLabel('كلمة المرور'), helperText: '8 أحرف على الأقل، حروف وأرقام'),
-              validator: validateNewPassword,
+            AppCard(
+              padding: const EdgeInsets.fromLTRB(18, 22, 18, 10),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                TextFormField(controller: _name, decoration: InputDecoration(labelText: requiredLabel('الاسم الكامل')), validator: validateFullName),
+                gap,
+                genderField,
+                gap,
+                TextFormField(
+                  controller: _email,
+                  keyboardType: TextInputType.emailAddress,
+                  textDirection: TextDirection.ltr,
+                  decoration: InputDecoration(labelText: requiredLabel('البريد الإلكتروني')),
+                  validator: validateEmail,
+                ),
+                gap,
+                TextFormField(
+                  controller: _mobile,
+                  keyboardType: TextInputType.phone,
+                  textDirection: TextDirection.ltr,
+                  maxLength: 10,
+                  decoration: InputDecoration(labelText: requiredLabel('رقم الجوال'), hintText: '05XXXXXXXX'),
+                  validator: validateMobile,
+                ),
+                gap,
+                TextFormField(
+                  controller: _password,
+                  obscureText: true,
+                  textDirection: TextDirection.ltr,
+                  decoration: InputDecoration(labelText: requiredLabel('كلمة المرور'), helperText: '8 أحرف على الأقل، حروف وأرقام'),
+                  validator: validateNewPassword,
+                ),
+              ]),
             ),
             const SectionTitle('بيانات الترخيص'),
           ],
-          TextFormField(
-            controller: _license,
-            decoration: InputDecoration(labelText: requiredLabel('رقم الترخيص المهني')),
-            validator: (v) => (v ?? '').trim().isEmpty ? 'أدخل رقم الترخيص' : null,
-          ),
-          gap,
-          FormField<void>(
-            validator: (_) {
-              if (_expiry == null) return 'اختر تاريخ انتهاء الترخيص';
-              if (!_expiry!.isAfter(DateTime(now.year, now.month, now.day))) return vetRegistrationErrors['license_expiry_not_future'];
-              return null;
-            },
-            builder: (field) => InputDecorator(
-              decoration: InputDecoration(labelText: requiredLabel('تاريخ انتهاء الترخيص'), errorText: field.errorText),
-              child: InkWell(
-                onTap: () async {
-                  final d = await showDatePicker(
-                    context: context,
-                    initialDate: _expiry ?? now.add(const Duration(days: 365)),
-                    firstDate: now,
-                    lastDate: DateTime(now.year + 10),
-                  );
-                  if (d != null) setState(() => _expiry = d);
+          AppCard(
+            padding: const EdgeInsets.fromLTRB(18, 22, 18, 18),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              if (widget.completeOnly) ...[genderField, gap],
+              TextFormField(
+                controller: _license,
+                decoration: InputDecoration(labelText: requiredLabel('رقم الترخيص المهني')),
+                validator: (v) => (v ?? '').trim().isEmpty ? 'أدخل رقم الترخيص' : null,
+              ),
+              gap,
+              FormField<void>(
+                validator: (_) {
+                  if (_expiry == null) return 'اختر تاريخ انتهاء الترخيص';
+                  if (!_expiry!.isAfter(DateTime(now.year, now.month, now.day))) return vetRegistrationErrors['license_expiry_not_future'];
+                  return null;
                 },
-                child: Text(_expiry == null ? 'اختر التاريخ' : formatDate(_expiry!)),
+                builder: (field) => InputDecorator(
+                  decoration: InputDecoration(labelText: requiredLabel('تاريخ انتهاء الترخيص'), errorText: field.errorText),
+                  child: InkWell(
+                    onTap: () async {
+                      final d = await showDatePicker(
+                        context: context,
+                        initialDate: _expiry ?? now.add(const Duration(days: 365)),
+                        firstDate: now,
+                        lastDate: DateTime(now.year + 10),
+                      );
+                      if (d != null) setState(() => _expiry = d);
+                    },
+                    child: Row(children: [
+                      Expanded(
+                        child: Text(
+                          _expiry == null ? 'اختر التاريخ' : formatDate(_expiry!),
+                          style: TextStyle(color: _expiry == null ? Palette.muted : Palette.ink),
+                        ),
+                      ),
+                      const Icon(Icons.calendar_today_outlined, size: 20, color: Palette.muted),
+                    ]),
+                  ),
+                ),
               ),
-            ),
-          ),
-          gap,
-          FormField<void>(
-            validator: (_) => _licenseFile == null ? 'أرفق صورة الترخيص' : null,
-            builder: (field) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              OutlinedButton.icon(
-                onPressed: _pickLicense,
-                icon: Icon(_licenseFile == null ? Icons.upload_file : Icons.check_circle),
-                label: Text(_licenseFile == null ? 'إرفاق ملف الترخيص (PDF أو صورة، 10 م.ب)' : 'تم إرفاق الترخيص · تغيير'),
+              gap,
+              FormField<void>(
+                validator: (_) => _licenseFile == null ? 'أرفق صورة الترخيص' : null,
+                builder: (field) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  OutlinedButton.icon(
+                    onPressed: _pickLicense,
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(0, 60),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Radii.field)),
+                      backgroundColor: _licenseFile == null ? Palette.canvas : Palette.successSoft,
+                      foregroundColor: _licenseFile == null ? Palette.juniper : Palette.success,
+                      side: BorderSide(
+                        color: field.hasError
+                            ? Theme.of(context).colorScheme.error
+                            : (_licenseFile == null ? Palette.lineStrong : Palette.success),
+                      ),
+                    ),
+                    icon: Icon(_licenseFile == null ? Icons.upload_file : Icons.check_circle),
+                    label: Text(_licenseFile == null ? 'إرفاق ملف الترخيص (PDF أو صورة، 10 م.ب)' : 'تم إرفاق الترخيص · تغيير'),
+                  ),
+                  if (field.hasError)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(field.errorText!, style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12.5)),
+                    ),
+                ]),
               ),
-              if (field.hasError)
-                Text(field.errorText!, style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
+              _chips('التخصصات', specialtyLabels, _specialties),
+              _chips('الحيوانات التي تعالجها', speciesLabels, _animalTypes),
+              _chips('اللغات', languageLabels, _languages),
+              gap,
+              TextFormField(controller: _bio, minLines: 2, maxLines: 5, decoration: const InputDecoration(labelText: 'نبذة عنك (اختياري)')),
+              if (!widget.completeOnly) ...[gap, TermsField(onChanged: (v) => _terms = v)],
             ]),
           ),
-          _chips('التخصصات', specialtyLabels, _specialties),
-          _chips('الحيوانات التي تعالجها', speciesLabels, _animalTypes),
-          _chips('اللغات', languageLabels, _languages),
-          gap,
-          TextFormField(controller: _bio, minLines: 2, maxLines: 5, decoration: const InputDecoration(labelText: 'نبذة عنك (اختياري)')),
-          if (!widget.completeOnly) ...[gap, TermsField(onChanged: (v) => _terms = v)],
           const SizedBox(height: 20),
           BusyButton(busy: _busy, onPressed: _submit, label: widget.completeOnly ? 'إرسال للتحقق' : 'تسجيل'),
-          const Padding(
-            padding: EdgeInsets.only(top: 12),
-            child: Text('بعد التسجيل تكون حالة حسابك «بانتظار التحقق» حتى يراجع المشرف ترخيصك.', textAlign: TextAlign.center),
+          const SizedBox(height: 14),
+          const NoticeBanner(
+            'بعد التسجيل تكون حالة حسابك «بانتظار التحقق» حتى يراجع المشرف ترخيصك.',
+            icon: Icons.hourglass_top,
+            tone: Tone.accent,
           ),
         ]),
       ),

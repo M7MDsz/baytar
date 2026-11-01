@@ -44,16 +44,16 @@ class _OwnerCaseScreenState extends State<OwnerCaseScreen> {
           load: _load,
           builder: (context, data, _) {
             final (c, requests, referrals) = data;
-            return ListView(padding: const EdgeInsets.all(16), children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(children: [
-                    InfoRow('رقم الحالة', c.caseNumber),
-                    InfoRow('الحيوان', c.animalName),
-                    InfoRow('أُرسلت', c.submittedAt == null ? null : formatDayTime(c.submittedAt!)),
-                  ]),
-                ),
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+              AppCard(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  Align(alignment: AlignmentDirectional.centerStart, child: SpeciesAvatar(c.animalSpecies, radius: 30)),
+                  const SizedBox(height: 4),
+                  InfoRow('رقم الحالة', c.caseNumber),
+                  InfoRow('الحيوان', c.animalName),
+                  InfoRow('أُرسلت', c.submittedAt == null ? null : formatDayTime(c.submittedAt!)),
+                ]),
               ),
               for (final r in referrals) ReferralCard(referral: r),
               for (final r in requests)
@@ -62,22 +62,30 @@ class _OwnerCaseScreenState extends State<OwnerCaseScreen> {
                   action: r.isOpen
                       ? Align(
                           alignment: AlignmentDirectional.centerEnd,
-                          child: FilledButton(
-                            style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
+                          child: FilledButton.icon(
+                            style: FilledButton.styleFrom(minimumSize: const Size(0, 44)),
                             onPressed: () async {
                               await context.push('/requests/${r.id}');
                               setState(() => _key = UniqueKey());
                             },
-                            child: const Text('الرد'),
+                            icon: const Icon(Icons.reply_rounded),
+                            label: const Text('الرد'),
                           ),
                         )
                       : null,
                 ),
               const SectionTitle('الوصف'),
-              Text((c.description ?? '').isEmpty ? 'لا يوجد وصف مكتوب.' : c.description!),
-              if (c.voicePath != null) ...[const SizedBox(height: 12), VoicePlayer(note: VoiceNote.remote(c.voicePath!))],
+              AppCard(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                  Text(
+                    (c.description ?? '').isEmpty ? 'لا يوجد وصف مكتوب.' : c.description!,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  if (c.voicePath != null) ...[const SizedBox(height: 12), VoicePlayer(note: VoiceNote.remote(c.voicePath!))],
+                ]),
+              ),
               const SectionTitle('المرفقات'),
-              MediaGallery(items: c.media),
+              AppCard(child: MediaGallery(items: c.media)),
             ]);
           },
         ),

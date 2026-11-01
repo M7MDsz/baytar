@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/formatting.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
+import '../notifications/notification_bell.dart';
 import 'pending_vet.dart';
 
 Future<List<PendingVet>> loadPendingVets() async {
@@ -24,7 +25,7 @@ class _PendingVetsScreenState extends State<PendingVetsScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('طلبات التحقق')),
+        appBar: AppBar(title: const Text('طلبات التحقق'), actions: const [NotificationBell()]),
         body: AsyncView<List<PendingVet>>(
           key: _key,
           load: loadPendingVets,
@@ -33,20 +34,16 @@ class _PendingVetsScreenState extends State<PendingVetsScreen> {
                   SizedBox(height: 100),
                   EmptyState(icon: Icons.task_alt, message: 'لا توجد طلبات بانتظار التحقق.'),
                 ])
-              : ListView(padding: const EdgeInsets.all(12), children: [
+              : ListView(padding: pagePadding(context), children: [
                   for (final v in items)
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.badge_outlined),
-                        title: Text(v.fullName),
-                        subtitle: Text('ترخيص ${v.licenseNumber}\nأُرسل ${formatDayTime(v.submittedAt)}'),
-                        isThreeLine: true,
-                        trailing: const Icon(Icons.chevron_left),
-                        onTap: () async {
-                          await context.push('/admin/vets/${v.id}');
-                          setState(() => _key = UniqueKey());
-                        },
-                      ),
+                    ListCard(
+                      leading: DoctorAvatar(v.gender, radius: 26),
+                      title: v.fullName,
+                      subtitle: 'ترخيص ${v.licenseNumber}\nأُرسل ${formatDayTime(v.submittedAt)}',
+                      onTap: () async {
+                        await context.push('/admin/vets/${v.id}');
+                        setState(() => _key = UniqueKey());
+                      },
                     ),
                 ]),
         ),

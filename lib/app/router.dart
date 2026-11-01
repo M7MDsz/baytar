@@ -27,7 +27,12 @@ GoRouter buildRouter(List<Feature> features) {
         builder: (context, state, child) => HomeShell(tabs: tabs, location: state.matchedLocation, child: child),
         routes: [
           for (final tab in tabs)
-            if (tabPaths.add(tab.path)) GoRoute(path: tab.path, builder: (context, _) => tab.builder(context)),
+            // Tab switches are animated once, by HomeShell, so the tab pages themselves have no transition.
+            if (tabPaths.add(tab.path))
+              GoRoute(
+                path: tab.path,
+                pageBuilder: (context, state) => NoTransitionPage(key: state.pageKey, child: tab.builder(context)),
+              ),
         ],
       ),
       ...features.expand((f) => f.routes),

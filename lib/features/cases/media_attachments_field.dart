@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../app/theme.dart';
 import '../../core/storage.dart';
 import '../../core/widgets.dart';
 import 'case_record.dart';
@@ -51,39 +52,62 @@ class MediaAttachmentsField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Wrap(spacing: 8, runSpacing: 8, children: [
-          for (final m in items)
-            InputChip(
-              avatar: Icon(m.isVideo ? Icons.movie_outlined : Icons.image_outlined),
-              label: Text('${m.isVideo ? 'فيديو' : 'صورة'} · ${(m.sizeBytes / 1048576).toStringAsFixed(1)} م.ب'),
-              onPressed: () => _preview(context, m),
-              onDeleted: () => onChanged([...items]..remove(m)),
-              deleteButtonTooltipMessage: 'إزالة',
-            ),
-        ]),
-        const SizedBox(height: 8),
+        if (items.isNotEmpty) ...[
+          Wrap(spacing: 8, runSpacing: 8, children: [
+            for (final m in items)
+              InputChip(
+                avatar: Icon(m.isVideo ? Icons.movie_outlined : Icons.image_outlined),
+                label: Text('${m.isVideo ? 'فيديو' : 'صورة'} · ${(m.sizeBytes / 1048576).toStringAsFixed(1)} م.ب'),
+                onPressed: () => _preview(context, m),
+                onDeleted: () => onChanged([...items]..remove(m)),
+                deleteButtonTooltipMessage: 'إزالة',
+              ),
+          ]),
+          const SizedBox(height: 12),
+        ],
         Row(children: [
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: () => _add(context, video: false),
-              icon: const Icon(Icons.add_photo_alternate_outlined),
-              label: const Text('صورة'),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: () => _add(context, video: true),
-              icon: const Icon(Icons.video_call_outlined),
-              label: const Text('فيديو'),
-            ),
-          ),
+          Expanded(child: _AddTile(icon: Icons.add_photo_alternate_outlined, label: 'صورة', onTap: () => _add(context, video: false))),
+          const SizedBox(width: 10),
+          Expanded(child: _AddTile(icon: Icons.video_call_outlined, label: 'فيديو', onTap: () => _add(context, video: true))),
         ]),
-        const Padding(
-          padding: EdgeInsets.only(top: 6),
-          child: Text('اختياري · JPG أو PNG أو MP4 حتى 3 دقائق · 30 ميجابايت كحد أقصى', style: TextStyle(fontSize: 12)),
+        Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            'اختياري · JPG أو PNG أو MP4 حتى 3 دقائق · 30 ميجابايت كحد أقصى',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
         ),
       ]);
+}
+
+/// Large soft tile for adding a photo or a video.
+class _AddTile extends StatelessWidget {
+  const _AddTile({required this.icon, required this.label, required this.onTap});
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) => Material(
+        color: Palette.canvas,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(Radii.tile),
+          side: const BorderSide(color: Palette.lineStrong),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(Radii.tile),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Column(children: [
+              IconTile(icon, size: 40),
+              const SizedBox(height: 6),
+              Text(label, style: Theme.of(context).textTheme.labelLarge),
+            ]),
+          ),
+        ),
+      );
 }
 
 class _Preview extends StatefulWidget {

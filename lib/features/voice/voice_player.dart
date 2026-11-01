@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 
+import '../../app/theme.dart';
 import '../../core/storage.dart';
 import 'voice_note.dart';
 
@@ -58,17 +59,31 @@ class _VoicePlayerState extends State<VoicePlayer> {
   Widget build(BuildContext context) {
     final playing = _state == PlayerState.playing;
     final progress = _duration.inMilliseconds == 0 ? 0.0 : _position.inMilliseconds / _duration.inMilliseconds;
-    return Row(children: [
-      IconButton.filledTonal(
-        tooltip: playing ? 'إيقاف مؤقت' : 'تشغيل',
-        onPressed: _toggle,
-        icon: Icon(playing ? Icons.pause : Icons.play_arrow),
-      ),
-      const SizedBox(width: 8),
-      Expanded(child: LinearProgressIndicator(value: progress.clamp(0, 1))),
-      const SizedBox(width: 8),
-      Text(_mmss(_duration == Duration.zero ? _position : _duration)),
-      ?widget.trailing,
-    ]);
+    return Container(
+      padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 12, 4),
+      decoration: BoxDecoration(color: Palette.juniperSoft, borderRadius: BorderRadius.circular(999)),
+      child: Row(children: [
+        IconButton.filled(
+          tooltip: playing ? 'إيقاف مؤقت' : 'تشغيل',
+          style: IconButton.styleFrom(backgroundColor: Palette.juniper, foregroundColor: Colors.white),
+          onPressed: _toggle,
+          icon: Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: LinearProgressIndicator(
+            value: progress.clamp(0, 1),
+            color: Palette.juniper,
+            backgroundColor: Palette.surface,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          _mmss(_duration == Duration.zero ? _position : _duration),
+          style: Theme.of(context).textTheme.labelMedium!.copyWith(color: Palette.juniper),
+        ),
+        ?widget.trailing,
+      ]),
+    );
   }
 }

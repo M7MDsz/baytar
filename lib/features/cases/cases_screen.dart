@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/formatting.dart';
 import '../../core/widgets.dart';
+import '../notifications/notification_bell.dart';
 import 'case_record.dart';
 import 'cases_repository.dart';
 
@@ -25,29 +27,51 @@ class _CasesScreenState extends State<CasesScreen> {
   Widget _list(List<CaseRecord> cases, {required bool drafts}) {
     if (cases.isEmpty) {
       return ListView(children: [
-        const SizedBox(height: 100),
+        const SizedBox(height: 80),
         EmptyState(
           icon: drafts ? Icons.edit_note : Icons.outbox_outlined,
           message: drafts ? 'لا توجد مسودات.' : 'لم ترسل أي حالة بعد.',
+          action: FilledButton.tonalIcon(
+            style: tonalButton,
+            onPressed: () => _open('/cases/new'),
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('حالة جديدة'),
+          ),
         ),
       ]);
     }
-    return ListView(padding: const EdgeInsets.fromLTRB(12, 12, 12, 96), children: [
-      for (final c in cases)
-        Card(
-          child: ListTile(
-            leading: Icon(drafts ? Icons.edit_note : Icons.assignment_outlined),
-            title: Text(c.animalName ?? ''),
-            subtitle: Text(
-              [
-                if (c.caseNumber != null) c.caseNumber!,
-                formatDayTime(c.submittedAt ?? c.createdAt),
-                if ((c.description ?? '').isNotEmpty) c.description!,
-              ].join('\n'),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-            isThreeLine: true,
+    return ListView(padding: pagePadding(context, bottom: 96), children: [
+      for (final (i, c) in cases.indexed)
+        Entrance(
+          index: i,
+          child: ListCard(
+            leading: Stack(clipBehavior: Clip.none, children: [
+              SpeciesAvatar(c.animalSpecies, radius: 26),
+              PositionedDirectional(
+                bottom: -4,
+                end: -4,
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: drafts ? Palette.accentSoft : Palette.juniperSoft,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Palette.surface, width: 2),
+                  ),
+                  child: Icon(
+                    drafts ? Icons.edit_note : Icons.assignment_outlined,
+                    size: 14,
+                    color: drafts ? Palette.accentDeep : Palette.juniper,
+                  ),
+                ),
+              ),
+            ]),
+            title: c.animalName ?? '',
+            subtitle: [
+              if (c.caseNumber != null) c.caseNumber!,
+              formatDayTime(c.submittedAt ?? c.createdAt),
+              if ((c.description ?? '').isNotEmpty) c.description!,
+            ].join('\n'),
+            subtitleMaxLines: 3,
             onTap: () => _open(drafts ? '/cases/${c.id}/edit' : '/cases/${c.id}'),
           ),
         ),
@@ -60,7 +84,8 @@ class _CasesScreenState extends State<CasesScreen> {
         child: Scaffold(
           appBar: AppBar(
             title: const Text('حالاتي'),
-            bottom: const TabBar(tabs: [Tab(text: 'المسودات'), Tab(text: 'المرسلة')]),
+            actions: const [NotificationBell()],
+            bottom: const PillTabBar(tabs: [Tab(text: 'المسودات'), Tab(text: 'المرسلة')]),
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _open('/cases/new'),

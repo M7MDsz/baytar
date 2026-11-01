@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../app/theme.dart';
 import '../../core/errors.dart';
 import '../../core/formatting.dart';
 import '../../core/widgets.dart';
@@ -56,22 +57,40 @@ class _SlotPickerState extends State<SlotPicker> {
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null && _slots == null) return Text(friendlyError(_error!));
-    if (_slots == null) return const Center(child: CircularProgressIndicator());
+    if (_error != null && _slots == null) {
+      return NoticeBanner(friendlyError(_error!), tone: Tone.danger, icon: Icons.cloud_off);
+    }
+    if (_slots == null) {
+      return const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator(strokeWidth: 3)));
+    }
     if (_slots!.isEmpty) {
-      return const EmptyState(icon: Icons.event_busy, message: 'لا توجد مواعيد متاحة لهذا الطبيب حالياً.');
+      return const NoticeBanner('لا توجد مواعيد متاحة لهذا الطبيب حالياً.', icon: Icons.event_busy, tone: Tone.neutral);
     }
     final byDay = <String, List<FreeSlot>>{};
     for (final s in _slots!) {
       byDay.putIfAbsent(formatDay(s.startsAt), () => []).add(s);
     }
+    final text = Theme.of(context).textTheme;
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      for (final day in byDay.entries) ...[
-        Padding(padding: const EdgeInsets.only(top: 12, bottom: 6), child: Text(day.key)),
+      for (final (i, day) in byDay.entries.indexed) ...[
+        Padding(
+          padding: EdgeInsets.only(top: i == 0 ? 0 : 16, bottom: 10),
+          child: Row(children: [
+            const Icon(Icons.calendar_today_outlined, size: 16, color: Palette.muted),
+            const SizedBox(width: 6),
+            Text(day.key, style: text.titleSmall),
+          ]),
+        ),
         Wrap(spacing: 8, runSpacing: 8, children: [
           for (final s in day.value)
             ChoiceChip(
-              label: Text(formatTime(s.startsAt)),
+              showCheckmark: false,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 9),
+              label: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 64),
+                child: Text(formatTime(s.startsAt), textAlign: TextAlign.center),
+              ),
               selected: s.id == widget.selected,
               onSelected: (on) => widget.onSelected(on ? s : null),
             ),

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:livekit_client/livekit_client.dart';
+import 'package:livekit_client/livekit_client.dart' hide Session;
 
+import '../../app/theme.dart';
 import '../../core/errors.dart';
+import '../../core/session.dart';
+import '../../core/widgets.dart';
 import 'consultation_api.dart';
 
 /// Video room for one appointment. Used by the owner (US-14) and by the veterinarian (US-19),
@@ -87,18 +90,17 @@ class _ConsultationRoomScreenState extends State<ConsultationRoomScreen> {
     if (_connecting || _error != null) {
       return Scaffold(
         appBar: AppBar(title: const Text('الاستشارة')),
-        body: Center(
-          child: _connecting
-              ? const Column(mainAxisSize: MainAxisSize.min, children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 12),
-                  Text('جارٍ الاتصال...'),
-                ])
-              : Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(_error!, textAlign: TextAlign.center),
-                ),
-        ),
+        body: _connecting
+            ? Center(
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  _otherParty(radius: 48),
+                  const SizedBox(height: 20),
+                  const SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 3)),
+                  const SizedBox(height: 12),
+                  Text('جارٍ الاتصال...', style: Theme.of(context).textTheme.titleMedium),
+                ]),
+              )
+            : EmptyState(icon: Icons.videocam_off_outlined, message: _error!),
       );
     }
     final local = _room.localParticipant;
@@ -107,14 +109,29 @@ class _ConsultationRoomScreenState extends State<ConsultationRoomScreen> {
     final micOn = local?.isMicrophoneEnabled() ?? false;
     final camOn = local?.isCameraEnabled() ?? false;
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFF07130F),
       body: SafeArea(
         child: Stack(children: [
           Positioned.fill(
             child: remote != null
                 ? VideoTrackRenderer(remote)
-                : const Center(
-                    child: Text('بانتظار انضمام الطرف الآخر...', style: TextStyle(color: Colors.white70)),
+                : DecoratedBox(
+                    decoration: const BoxDecoration(
+                      gradient: RadialGradient(
+                        radius: 0.9,
+                        colors: [Palette.juniperMid, Palette.juniper, Color(0xFF07130F)],
+                      ),
+                    ),
+                    child: Center(
+                      child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        _otherParty(radius: 56),
+                        const SizedBox(height: 18),
+                        const Text(
+                          'بانتظار انضمام الطرف الآخر...',
+                          style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w500),
+                        ),
+                      ]),
+                    ),
                   ),
           ),
           if (localVideo != null)
@@ -123,13 +140,28 @@ class _ConsultationRoomScreenState extends State<ConsultationRoomScreen> {
               end: 16,
               width: 110,
               height: 150,
-              child: ClipRRect(borderRadius: BorderRadius.circular(12), child: VideoTrackRenderer(localVideo)),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white24, width: 1.5),
+                  boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 16, offset: Offset(0, 6))],
+                ),
+                child: ClipRRect(borderRadius: BorderRadius.circular(15), child: VideoTrackRenderer(localVideo)),
+              ),
             ),
           Positioned(
             left: 0,
             right: 0,
             bottom: 24,
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            child: Center(
+              child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(40),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(mainAxisSize: MainAxisSize.min, children: [
               _RoundButton(
                 icon: micOn ? Icons.mic : Icons.mic_off,
                 tooltip: micOn ? 'كتم الصوت' : 'تشغيل الصوت',
@@ -154,15 +186,22 @@ class _ConsultationRoomScreenState extends State<ConsultationRoomScreen> {
               _RoundButton(
                 icon: Icons.call_end,
                 tooltip: widget.endLabel ?? 'مغادرة',
-                color: Colors.red,
+                color: Palette.danger,
                 onPressed: _leave,
               ),
-            ]),
+              ]),
+              ),
+            ),
           ),
         ]),
       ),
     );
   }
+
+  /// Who the user is waiting for: the veterinarian for an owner, the animal for a veterinarian.
+  Widget _otherParty({required double radius}) => Session.instance.profile?.role == UserRole.vet
+      ? SpeciesAvatar(null, radius: radius)
+      : DoctorAvatar(null, radius: radius);
 }
 
 class _RoundButton extends StatelessWidget {
@@ -175,11 +214,14 @@ class _RoundButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
         child: IconButton.filled(
           tooltip: tooltip,
-          iconSize: 28,
-          style: IconButton.styleFrom(backgroundColor: color ?? Colors.white24, padding: const EdgeInsets.all(14)),
+          iconSize: 26,
+          style: IconButton.styleFrom(
+            backgroundColor: color ?? Colors.white.withValues(alpha: 0.16),
+            padding: const EdgeInsets.all(14),
+          ),
           onPressed: onPressed,
           icon: Icon(icon, color: Colors.white),
         ),

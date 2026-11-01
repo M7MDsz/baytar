@@ -50,18 +50,29 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
         appBar: AppBar(title: const Text('تغيير الموعد')),
         body: AsyncView<OwnerAppointment>(
           load: () => BookingRepository().byId(widget.appointmentId),
-          builder: (context, a, _) => ListView(padding: const EdgeInsets.all(16), children: [
-            Card(child: ListTile(title: const Text('الموعد الحالي'), subtitle: Text('${formatDayTime(a.startsAt)} · ${a.vetName}'))),
-            const SizedBox(height: 12),
-            Text('المواعيد المتاحة', style: Theme.of(context).textTheme.titleMedium),
-            SlotPicker(
-              key: _pickerKey,
-              vetId: a.vetId,
-              selected: _slot?.id,
-              onSelected: (s) => setState(() => _slot = s),
+          builder: (context, a, _) => Column(children: [
+            Expanded(
+              child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+                ListCard(
+                  leading: DoctorAvatar(a.vetGender, radius: 26),
+                  title: 'الموعد الحالي',
+                  subtitle: '${formatDayTime(a.startsAt)} · ${a.vetName}',
+                ),
+                SectionCard(
+                  title: 'المواعيد المتاحة',
+                  icon: Icons.schedule,
+                  child: SlotPicker(
+                    key: _pickerKey,
+                    vetId: a.vetId,
+                    selected: _slot?.id,
+                    onSelected: (s) => setState(() => _slot = s),
+                  ),
+                ),
+              ]),
             ),
-            const SizedBox(height: 24),
-            BusyButton(busy: _busy, onPressed: _slot == null ? null : () => _confirm(a), label: 'تأكيد الموعد الجديد'),
+            BottomActionBar(children: [
+              BusyButton(busy: _busy, onPressed: _slot == null ? null : () => _confirm(a), label: 'تأكيد الموعد الجديد'),
+            ]),
           ]),
         ),
       );

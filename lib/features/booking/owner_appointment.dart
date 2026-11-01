@@ -12,6 +12,8 @@ class OwnerAppointment {
     required this.hasOutcome,
     this.caseNumber,
     this.endedAt,
+    this.vetGender,
+    this.animalSpecies,
   });
 
   final String id;
@@ -26,6 +28,10 @@ class OwnerAppointment {
   final String status;
   final DateTime? endedAt;
   final bool hasOutcome;
+
+  /// For the avatars; null until the vet_gender migration is applied.
+  final String? vetGender;
+  final String? animalSpecies;
 
   bool get isUpcoming => status == 'booked' && endedAt == null && startsAt.add(const Duration(minutes: 30)).isAfter(DateTime.now());
 
@@ -46,5 +52,7 @@ class OwnerAppointment {
         status: m['status'] as String,
         endedAt: parseTsOrNull(m['ended_at']),
         hasOutcome: m['has_outcome'] as bool,
+        vetGender: m['vet_gender'] as String?,
+        animalSpecies: m['animal_species'] as String?,
       );
 }

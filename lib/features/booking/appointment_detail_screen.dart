@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/errors.dart';
 import '../../core/formatting.dart';
 import '../../core/session.dart';
@@ -10,6 +11,7 @@ import '../consultation/consultation_feature.dart';
 import '../consultation/join_window.dart';
 import '../reschedule/appointment_change.dart';
 import 'booking_repository.dart';
+import 'my_appointments_screen.dart';
 import 'owner_appointment.dart';
 
 /// Owner's appointment page: details, Join (US-14), Reschedule (US-12), Cancel (US-13)
@@ -58,19 +60,30 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
           load: () => BookingRepository().byId(widget.appointmentId),
           builder: (context, a, reload) {
             final changeable = canChangeAppointment(a);
-            return ListView(padding: const EdgeInsets.all(16), children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(children: [
-                    InfoRow('الموعد', formatDayTime(a.startsAt)),
-                    InfoRow('الطبيب', a.vetName),
-                    InfoRow('الحيوان', a.animalName),
-                    InfoRow('رقم الحالة', a.caseNumber),
-                    InfoRow('الحالة', a.statusLabel),
-                  ]),
-                ),
+            final text = Theme.of(context).textTheme;
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+              AppCard(
+                padding: const EdgeInsets.all(18),
+                child: Row(children: [
+                  VetWithAnimal(vetGender: a.vetGender, species: a.animalSpecies, radius: 32),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(a.vetName, style: text.titleMedium!.copyWith(fontWeight: FontWeight.w700)),
+                      Text(formatDayTime(a.startsAt), style: text.bodyMedium!.copyWith(color: Palette.muted)),
+                      const SizedBox(height: 8),
+                      StatusPill(a.statusLabel, tone: appointmentTone(a)),
+                    ]),
+                  ),
+                ]),
               ),
+              InfoCard(children: [
+                InfoRow('الموعد', formatDayTime(a.startsAt)),
+                InfoRow('الطبيب', a.vetName),
+                InfoRow('الحيوان', a.animalName),
+                InfoRow('رقم الحالة', a.caseNumber),
+                InfoRow('الحالة', a.statusLabel),
+              ]),
               const SizedBox(height: 16),
               if (a.status == 'booked' && a.isUpcoming)
                 FilledButton.icon(
@@ -96,14 +109,20 @@ class _AppointmentDetailScreenState extends State<AppointmentDetailScreen> {
               ] else if (a.status == 'booked' && a.isUpcoming)
                 const Padding(
                   padding: EdgeInsets.only(top: 12),
-                  child: Text('لا يمكن تغيير الموعد أو إلغاؤه قبل بدايته بأقل من 12 ساعة.', textAlign: TextAlign.center),
+                  child: NoticeBanner(
+                    'لا يمكن تغيير الموعد أو إلغاؤه قبل بدايته بأقل من 12 ساعة.',
+                    icon: Icons.lock_clock_outlined,
+                    tone: Tone.neutral,
+                  ),
                 ),
-              if (a.hasOutcome)
+              if (a.hasOutcome) ...[
+                const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: () => context.push('/outcomes/${a.id}'),
                   icon: const Icon(Icons.assignment_outlined),
                   label: const Text('عرض نتيجة الاستشارة'),
                 ),
+              ],
             ]);
           },
         ),

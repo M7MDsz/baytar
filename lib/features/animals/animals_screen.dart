@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets.dart';
+import '../notifications/notification_bell.dart';
 import 'animal.dart';
 import 'animal_photo.dart';
 import 'animals_repository.dart';
@@ -24,7 +25,7 @@ class _AnimalsScreenState extends State<AnimalsScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('حيواناتي')),
+        appBar: AppBar(title: const Text('حيواناتي'), actions: const [NotificationBell()]),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => _open('/animals/new'),
           icon: const Icon(Icons.add),
@@ -34,26 +35,36 @@ class _AnimalsScreenState extends State<AnimalsScreen> {
           key: _listKey,
           load: AnimalsRepository().mine,
           builder: (context, animals, _) => animals.isEmpty
-              ? ListView(children: const [
-                  SizedBox(height: 120),
-                  EmptyState(icon: Icons.pets, message: 'لم تضف أي حيوان بعد.\nابدأ بإضافة ملف لحيوانك.'),
+              ? ListView(children: [
+                  const SizedBox(height: 80),
+                  EmptyState(
+                    icon: Icons.pets,
+                    illustration: const SpeciesCluster(['cat', 'dog', 'camel']),
+                    message: 'لم تضف أي حيوان بعد.\nابدأ بإضافة ملف لحيوانك.',
+                    action: FilledButton.icon(
+                      onPressed: () => _open('/animals/new'),
+                      icon: const Icon(Icons.add_rounded),
+                      label: const Text('إضافة حيوان'),
+                    ),
+                  ),
                 ])
-              : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
-                  itemCount: animals.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (context, i) {
-                    final a = animals[i];
-                    return Card(
-                      child: ListTile(
-                        leading: AnimalPhoto(path: a.photoPath),
-                        title: Text(a.name),
-                        subtitle: Text([a.speciesLabel, a.sexLabel, a.ageLabel].where((s) => s.isNotEmpty).join(' · ')),
-                        trailing: const Icon(Icons.chevron_left),
-                        onTap: () => _open('/animals/${a.id}'),
+              : ListView(
+                  padding: pagePadding(context, bottom: 96),
+                  children: [
+                    for (final (i, a) in animals.indexed)
+                      Entrance(
+                        index: i,
+                        child: ListCard(
+                          leading: Hero(
+                            tag: 'animal-${a.id}',
+                            child: AnimalPhoto(path: a.photoPath, species: a.species, radius: 28),
+                          ),
+                          title: a.name,
+                          subtitle: [a.speciesLabel, a.sexLabel, a.ageLabel].where((s) => s.isNotEmpty).join(' · '),
+                          onTap: () => _open('/animals/${a.id}'),
+                        ),
                       ),
-                    );
-                  },
+                  ],
                 ),
         ),
       );

@@ -36,33 +36,30 @@ class OutcomeViewScreen extends StatelessWidget {
               ]);
             }
             final text = Theme.of(context).textTheme;
-            return ListView(padding: const EdgeInsets.all(16), children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(children: [
-                    InfoRow('الحيوان', o.animalName),
-                    InfoRow('رقم الحالة', o.caseNumber),
-                    InfoRow('تاريخ الاستشارة', formatDay(o.consultationDate)),
-                    InfoRow('الطبيب', o.vetName),
-                  ]),
-                ),
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+              InfoCard(children: [
+                InfoRow('الحيوان', o.animalName),
+                InfoRow('رقم الحالة', o.caseNumber),
+                InfoRow('تاريخ الاستشارة', formatDay(o.consultationDate)),
+                InfoRow('الطبيب', o.vetName),
+              ]),
+              SectionCard(
+                title: 'التشخيص والملاحظات',
+                icon: Icons.medical_information_outlined,
+                child: SelectableText(o.findings, style: text.bodyLarge),
               ),
-              const SizedBox(height: 12),
-              Text('التشخيص والملاحظات', style: text.titleMedium),
-              const SizedBox(height: 6),
-              SelectableText(o.findings),
-              const SizedBox(height: 16),
-              Text('توجيهات الطبيب', style: text.titleMedium),
-              const SizedBox(height: 6),
-              SelectableText(o.guidance),
-              if ((o.ownerNotes ?? '').isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text('ملاحظات لك', style: text.titleMedium),
-                const SizedBox(height: 6),
-                SelectableText(o.ownerNotes!),
-              ],
-              for (final r in referrals) ...[const SizedBox(height: 16), ReferralCard(referral: r)],
+              SectionCard(
+                title: 'توجيهات الطبيب',
+                icon: Icons.checklist_rounded,
+                child: SelectableText(o.guidance, style: text.bodyLarge),
+              ),
+              if ((o.ownerNotes ?? '').isNotEmpty)
+                SectionCard(
+                  title: 'ملاحظات لك',
+                  icon: Icons.sticky_note_2_outlined,
+                  child: SelectableText(o.ownerNotes!, style: text.bodyLarge),
+                ),
+              for (final r in referrals) ReferralCard(referral: r),
             ]);
           },
         ),

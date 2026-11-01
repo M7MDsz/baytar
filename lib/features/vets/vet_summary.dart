@@ -10,6 +10,8 @@ class VetSummary {
     required this.animalTypes,
     required this.languages,
     this.nextAvailable,
+    this.gender,
+    this.bio,
   });
 
   final String id;
@@ -18,6 +20,12 @@ class VetSummary {
   final List<String> animalTypes;
   final List<String> languages;
   final DateTime? nextAvailable;
+
+  /// male, female, or null when not recorded (shown with a neutral avatar).
+  final String? gender;
+
+  /// Short bio; the profile always has it, the list only when list_vets returns it.
+  final String? bio;
 
   /// A veterinarian with no free time cannot be chosen for a new booking.
   bool get bookable => nextAvailable != null;
@@ -29,6 +37,8 @@ class VetSummary {
         animalTypes: _strings(m['animal_types']),
         languages: _strings(m['languages']),
         nextAvailable: parseTsOrNull(m['next_available']),
+        gender: m['gender'] as String?,
+        bio: m['bio'] as String?,
       );
 }
 
@@ -42,13 +52,13 @@ class VetProfile extends VetSummary {
     required this.licenseNumber,
     required this.licenseExpiry,
     super.nextAvailable,
-    this.bio,
+    super.gender,
+    super.bio,
     this.rating,
   });
 
   final String licenseNumber;
   final DateTime licenseExpiry;
-  final String? bio;
   final double? rating;
 
   factory VetProfile.fromMap(Map<String, dynamic> m) => VetProfile(
@@ -58,6 +68,7 @@ class VetProfile extends VetSummary {
         animalTypes: _strings(m['animal_types']),
         languages: _strings(m['languages']),
         nextAvailable: parseTsOrNull(m['next_available']),
+        gender: m['gender'] as String?,
         licenseNumber: m['license_number'] as String,
         licenseExpiry: DateTime.parse(m['license_expiry'] as String),
         bio: m['bio'] as String?,

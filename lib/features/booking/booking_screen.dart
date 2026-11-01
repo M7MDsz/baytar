@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/errors.dart';
 import '../../core/formatting.dart';
 import '../../core/widgets.dart';
@@ -42,7 +43,7 @@ class _BookingScreenState extends State<BookingScreen> {
       await showDialog<void>(
         context: context,
         builder: (context) => AlertDialog(
-          icon: const Icon(Icons.check_circle, size: 48),
+          icon: const SuccessCheck(),
           title: const Text('تم تأكيد الحجز'),
           content: Text('موعدك ${formatDayTime(_slot!.startsAt)}${widget.vetName == null ? '' : ' مع ${widget.vetName}'}.'),
           actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً'))],
@@ -65,43 +66,84 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(widget.vetName == null ? 'حجز موعد' : 'حجز موعد مع ${widget.vetName}')),
-        body: ListView(padding: const EdgeInsets.all(16), children: [
-          Text('1. اختر الموعد', style: Theme.of(context).textTheme.titleMedium),
-          SlotPicker(
-            key: _pickerKey,
-            vetId: widget.vetId,
-            selected: _slot?.id,
-            onSelected: (s) => setState(() => _slot = s),
+        body: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+          SectionCard(
+            title: '1. اختر الموعد',
+            icon: Icons.schedule,
+            child: SlotPicker(
+              key: _pickerKey,
+              vetId: widget.vetId,
+              selected: _slot?.id,
+              onSelected: (s) => setState(() => _slot = s),
+            ),
           ),
-          const SizedBox(height: 24),
-          Text('2. اختر الحالة', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          FutureBuilder<List<BookableCase>>(
-            future: _cases,
-            builder: (context, snap) {
-              if (!snap.hasData) return const LinearProgressIndicator();
-              final cases = snap.data!;
-              if (cases.isEmpty) {
-                return const Text('لا توجد حالة مرسلة بدون موعد. أرسل حالة لحيوانك أولاً.');
-              }
-              return RadioGroup<String>(
-                groupValue: _caseId,
-                onChanged: (v) => setState(() => _caseId = v),
-                child: Column(children: [
-                  for (final c in cases)
-                    RadioListTile<String>(
-                      value: c.id,
-                      title: Text(c.animalName),
-                      subtitle: Text(c.caseNumber ?? ''),
-                    ),
-                ]),
-              );
-            },
+          SectionCard(
+            title: '2. اختر الحالة',
+            icon: Icons.assignment_outlined,
+            child: FutureBuilder<List<BookableCase>>(
+              future: _cases,
+              builder: (context, snap) {
+                if (!snap.hasData) return const LinearProgressIndicator();
+                final cases = snap.data!;
+                if (cases.isEmpty) {
+                  return const NoticeBanner('لا توجد حالة مرسلة بدون موعد. أرسل حالة لحيوانك أولاً.', tone: Tone.neutral);
+                }
+                return RadioGroup<String>(
+                  groupValue: _caseId,
+                  onChanged: (v) => setState(() => _caseId = v),
+                  child: Column(children: [
+                    for (final c in cases)
+                      _Choice(
+                        selected: _caseId == c.id,
+                        child: RadioListTile<String>(
+                          value: c.id,
+                          title: Text(c.animalName),
+                          subtitle: Text(c.caseNumber ?? ''),
+                        ),
+                      ),
+                  ]),
+                );
+              },
+            ),
           ),
-          const SizedBox(height: 24),
-          if (_slot != null) Text('الموعد المختار: ${formatDayTime(_slot!.startsAt)}', textAlign: TextAlign.center),
-          const SizedBox(height: 8),
+        ]),
+        bottomNavigationBar: BottomActionBar(children: [
+          if (_slot != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Icon(Icons.event_available, size: 18, color: Palette.success),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    'الموعد المختار: ${formatDayTime(_slot!.startsAt)}',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                ),
+              ]),
+            ),
           BusyButton(busy: _busy, onPressed: _confirm, label: 'تأكيد الحجز'),
         ]),
+      );
+}
+
+/// Bordered option row that turns juniper when chosen.
+class _Choice extends StatelessWidget {
+  const _Choice({required this.selected, required this.child});
+
+  final bool selected;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: selected ? Palette.juniperSoft : Palette.surface,
+          borderRadius: BorderRadius.circular(Radii.tile),
+          border: Border.all(color: selected ? Palette.juniper : Palette.line, width: selected ? 1.6 : 1),
+        ),
+        child: child,
       );
 }

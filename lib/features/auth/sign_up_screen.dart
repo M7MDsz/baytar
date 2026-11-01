@@ -62,42 +62,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
       appBar: AppBar(title: const Text('إنشاء حساب')),
       body: Form(
         key: _form,
-        child: ListView(padding: const EdgeInsets.all(20), children: [
-          TextFormField(
-            controller: _name,
-            decoration: InputDecoration(labelText: requiredLabel('الاسم الكامل')),
-            validator: validateFullName,
+        child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 32), children: [
+          AppCard(
+            padding: const EdgeInsets.fromLTRB(18, 22, 18, 10),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              TextFormField(
+                controller: _name,
+                decoration: InputDecoration(labelText: requiredLabel('الاسم الكامل')),
+                validator: validateFullName,
+              ),
+              gap,
+              TextFormField(
+                controller: _email,
+                keyboardType: TextInputType.emailAddress,
+                textDirection: TextDirection.ltr,
+                decoration: InputDecoration(labelText: requiredLabel('البريد الإلكتروني')),
+                validator: validateEmail,
+              ),
+              gap,
+              TextFormField(
+                controller: _mobile,
+                keyboardType: TextInputType.phone,
+                textDirection: TextDirection.ltr,
+                maxLength: 10,
+                decoration: InputDecoration(labelText: requiredLabel('رقم الجوال'), hintText: '05XXXXXXXX'),
+                validator: validateMobile,
+              ),
+              gap,
+              TextFormField(
+                controller: _password,
+                obscureText: true,
+                textDirection: TextDirection.ltr,
+                decoration: InputDecoration(
+                  labelText: requiredLabel('كلمة المرور'),
+                  helperText: '8 أحرف على الأقل، حروف وأرقام',
+                ),
+                validator: validateNewPassword,
+              ),
+              gap,
+              TermsField(onChanged: (v) => _terms = v),
+            ]),
           ),
-          gap,
-          TextFormField(
-            controller: _email,
-            keyboardType: TextInputType.emailAddress,
-            textDirection: TextDirection.ltr,
-            decoration: InputDecoration(labelText: requiredLabel('البريد الإلكتروني')),
-            validator: validateEmail,
-          ),
-          gap,
-          TextFormField(
-            controller: _mobile,
-            keyboardType: TextInputType.phone,
-            textDirection: TextDirection.ltr,
-            maxLength: 10,
-            decoration: InputDecoration(labelText: requiredLabel('رقم الجوال'), hintText: '05XXXXXXXX'),
-            validator: validateMobile,
-          ),
-          gap,
-          TextFormField(
-            controller: _password,
-            obscureText: true,
-            textDirection: TextDirection.ltr,
-            decoration: InputDecoration(
-              labelText: requiredLabel('كلمة المرور'),
-              helperText: '8 أحرف على الأقل، حروف وأرقام',
-            ),
-            validator: validateNewPassword,
-          ),
-          gap,
-          TermsField(onChanged: (v) => _terms = v),
           const SizedBox(height: 20),
           BusyButton(busy: _busy, onPressed: _submit, label: 'إنشاء الحساب'),
         ]),

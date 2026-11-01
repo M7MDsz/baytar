@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/catalog.dart';
-import '../../core/formatting.dart';
 import '../../core/widgets.dart';
+import '../notifications/notification_bell.dart';
+import 'vet_card.dart';
 import 'vet_filters_sheet.dart';
 import 'vet_summary.dart';
 import 'vets_repository.dart';
@@ -37,26 +38,77 @@ class _VetsScreenState extends State<VetsScreen> {
 
   void _clear() => setState(() {
         _filters = const VetFilters();
+        _query = '';
+        _search.clear();
         _key = UniqueKey();
       });
 
+  // Name or specialty search over the loaded list; the server filters stay in the sheet (US-09).
+  final _search = TextEditingController();
+  String _query = '';
+
+  bool _matches(VetSummary v) {
+    final q = _query.trim();
+    return q.isEmpty || v.fullName.contains(q) || labelList(specialtyLabels, v.specialties).contains(q);
+  }
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('الأطباء البيطريون'), actions: [
-          IconButton(
-            tooltip: 'تصفية',
-            onPressed: _openFilters,
-            icon: Badge(isLabelVisible: !_filters.isEmpty, child: const Icon(Icons.tune)),
+        appBar: AppBar(
+          title: const Text('الأطباء البيطريون'),
+          actions: [
+            IconButton(
+              tooltip: 'تصفية',
+              onPressed: _openFilters,
+              style: IconButton.styleFrom(
+                backgroundColor: _filters.isEmpty ? Palette.surface : Palette.juniper,
+                foregroundColor: _filters.isEmpty ? Palette.juniper : Colors.white,
+                side: BorderSide(color: _filters.isEmpty ? Palette.lineStrong : Palette.juniper),
+              ),
+              icon: Badge(isLabelVisible: !_filters.isEmpty, child: const Icon(Icons.tune)),
+            ),
+            const SizedBox(width: 4),
+            const NotificationBell(),
+          ],
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(64),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: SearchBar(
+                controller: _search,
+                hintText: 'ابحث عن طبيب',
+                leading: const Icon(Icons.search_rounded),
+                onChanged: (v) => setState(() => _query = v),
+                trailing: [
+                  if (_query.isNotEmpty)
+                    IconButton(
+                      tooltip: 'مسح',
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () => setState(() {
+                        _search.clear();
+                        _query = '';
+                      }),
+                    ),
+                ],
+              ),
+            ),
           ),
-        ]),
+        ),
         body: AsyncView<List<VetSummary>>(
           key: _key,
           load: () => VetsRepository().list(_filters),
-          builder: (context, vets, _) {
+          builder: (context, all, _) {
+            final vets = all.where(_matches).toList();
             if (vets.isEmpty) {
               return ListView(children: [
                 const SizedBox(height: 100),
-                _filters.isEmpty
+                _filters.isEmpty && _query.isEmpty
                     ? const EmptyState(icon: Icons.medical_services_outlined, message: 'لا يوجد طبيب بيطري متاح حالياً.')
                     : EmptyState(
                         icon: Icons.filter_alt_off_outlined,
@@ -65,26 +117,13 @@ class _VetsScreenState extends State<VetsScreen> {
                       ),
               ]);
             }
-            return ListView(padding: const EdgeInsets.all(12), children: [
+            return ListView(padding: pagePadding(context), children: [
               if (vets.every((v) => !v.bookable))
                 const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Text('لا يوجد طبيب بيطري متاح حالياً. ستظهر المواعيد عند نشرها.'),
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: NoticeBanner('لا يوجد طبيب بيطري متاح حالياً. ستظهر المواعيد عند نشرها.', icon: Icons.event_busy),
                 ),
-              for (final v in vets)
-                Card(
-                  child: ListTile(
-                    onTap: () => context.push('/vets/${v.id}'),
-                    leading: CircleAvatar(child: Text(v.fullName.characters.first)),
-                    title: Text(v.fullName),
-                    subtitle: Text(
-                      '${labelList(specialtyLabels, v.specialties)}\n'
-                      '${v.nextAvailable == null ? 'لا توجد مواعيد متاحة' : 'أقرب موعد: ${formatDayTime(v.nextAvailable!)}'}',
-                    ),
-                    isThreeLine: true,
-                    trailing: const Icon(Icons.chevron_left),
-                  ),
-                ),
+              for (final (i, v) in vets.indexed) Entrance(index: i, child: VetCard(v)),
             ]);
           },
         ),
