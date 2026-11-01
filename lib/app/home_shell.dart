@@ -17,8 +17,15 @@ final _tabIcons = <IconData, (IconData, IconData)>{
   Icons.verified_user_outlined: (Icons.verified_user_outlined, Icons.verified_user),
 };
 
+/// Material 3 "emphasized decelerate".
+const _decelerate = Cubic(0.05, 0.7, 0.1, 1);
+
 /// Floating bottom navigation built from the tabs registered for the signed-in user's role.
-class HomeShell extends StatelessWidget {
+///
+/// Switching tabs plays a light fade-through: the old page is gone at once and the new one fades in
+/// while sliding 24 px in from the side of the tapped tab and settling from 98% scale (260 ms),
+/// starting together with the indicator. Skipped when the system asks for reduced motion.
+class HomeShell extends StatefulWidget {
   const HomeShell({super.key, required this.tabs, required this.location, required this.child});
 
   final List<HomeTab> tabs;
@@ -26,14 +33,67 @@ class HomeShell extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
+  State<HomeShell> createState() => _HomeShellState();
+}
+
+class _HomeShellState extends State<HomeShell> with SingleTickerProviderStateMixin {
+  late final AnimationController _enter =
+      AnimationController(vsync: this, duration: const Duration(milliseconds: 260), value: 1);
+  late final Animation<double> _t = CurvedAnimation(parent: _enter, curve: _decelerate);
+
+  /// +1 when the new tab is after the old one in tab order, -1 when before.
+  double _towardsEnd = 1;
+
+  List<HomeTab> get _mine {
     final role = Session.instance.profile?.role;
-    final mine = tabs.where((t) => role != null && t.roles.contains(role)).toList();
-    if (mine.length < 2) return child;
+    return widget.tabs.where((t) => role != null && t.roles.contains(role)).toList();
+  }
+
+  int _indexOf(String location, List<HomeTab> mine) {
     final found = mine.indexWhere((t) => location == t.path || location.startsWith('${t.path}/'));
-    final selected = found < 0 ? 0 : found;
+    return found < 0 ? 0 : found;
+  }
+
+  @override
+  void didUpdateWidget(HomeShell old) {
+    super.didUpdateWidget(old);
+    final mine = _mine;
+    final from = _indexOf(old.location, mine), to = _indexOf(widget.location, mine);
+    if (from == to) return;
+    _towardsEnd = to > from ? 1 : -1;
+    if (MediaQuery.of(context).disableAnimations) {
+      _enter.value = 1;
+    } else {
+      _enter.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _enter.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mine = _mine;
+    if (mine.length < 2) return widget.child;
+    final selected = _indexOf(widget.location, mine);
+    // Tab order runs from the start side, so "towards the end" is to the left in Arabic.
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final dx = 24 * _towardsEnd * (rtl ? -1 : 1);
     return Scaffold(
-      body: child,
+      body: AnimatedBuilder(
+        animation: _t,
+        child: widget.child,
+        builder: (context, child) => Opacity(
+          opacity: _t.value,
+          child: Transform.translate(
+            offset: Offset(dx * (1 - _t.value), 0),
+            child: Transform.scale(scale: 0.98 + 0.02 * _t.value, child: child),
+          ),
+        ),
+      ),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         child: Container(
@@ -52,7 +112,7 @@ class HomeShell extends StatelessWidget {
             // A short emerald bar just inside the top edge, above the current tab, sliding between tabs.
             Positioned.fill(
               child: AnimatedAlign(
-                duration: const Duration(milliseconds: 250),
+                duration: MediaQuery.disableAnimationsOf(context) ? Duration.zero : const Duration(milliseconds: 250),
                 curve: Curves.easeOut,
                 alignment: AlignmentDirectional(-1 + 2 * selected / (mine.length - 1), -1),
                 child: FractionallySizedBox(
