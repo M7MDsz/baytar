@@ -67,20 +67,39 @@ class _CasePanel extends StatelessWidget {
           builder: (context, panel, _) {
             if (panel == null) return const EmptyState(icon: Icons.lock_outline, message: 'لا يمكنك عرض هذه الحالة.');
             final animal = panel['animal'] as Map<String, dynamic>;
-            return ListView(padding: const EdgeInsets.all(16), children: [
-              Text('${animal['name']} · ${label(speciesLabels, animal['species'] as String?)}',
-                  style: Theme.of(context).textTheme.titleLarge),
-              InfoRow('رقم الحالة', panel['case_number'] as String?),
-              InfoRow('السلالة', animal['breed'] as String?),
-              InfoRow('الجنس', label(sexLabels, animal['sex'] as String?)),
-              InfoRow('العمر', animal['age_years'] == null ? animal['birth_date'] as String? : '${animal['age_years']} سنة'),
-              InfoRow('الوزن', animal['weight_kg'] == null ? null : '${animal['weight_kg']} كجم'),
-              InfoRow('حالات معروفة', animal['conditions'] as String?),
-              InfoRow('الحساسية', animal['allergies'] as String?),
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), children: [
+              Row(children: [
+                SpeciesAvatar(animal['species'] as String?, radius: 26),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '${animal['name']} · ${label(speciesLabels, animal['species'] as String?)}',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+              ]),
+              const SizedBox(height: 8),
+              InfoCard(children: [
+                InfoRow('رقم الحالة', panel['case_number'] as String?),
+                InfoRow('السلالة', animal['breed'] as String?),
+                InfoRow('الجنس', label(sexLabels, animal['sex'] as String?)),
+                InfoRow('العمر', animal['age_years'] == null ? animal['birth_date'] as String? : '${animal['age_years']} سنة'),
+                InfoRow('الوزن', animal['weight_kg'] == null ? null : '${animal['weight_kg']} كجم'),
+                InfoRow('حالات معروفة', animal['conditions'] as String?),
+                InfoRow('الحساسية', animal['allergies'] as String?),
+              ]),
               const SectionTitle('وصف المالك'),
-              Text((panel['description'] as String?) ?? 'لا يوجد وصف مكتوب.'),
+              AppCard(
+                child: Text(
+                  (panel['description'] as String?) ?? 'لا يوجد وصف مكتوب.',
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+              ),
               if (panel['has_voice'] == true)
-                const Padding(padding: EdgeInsets.only(top: 8), child: Text('أرفق المالك وصفاً صوتياً (متاح في صفحة الحالة).')),
+                const Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: NoticeBanner('أرفق المالك وصفاً صوتياً (متاح في صفحة الحالة).', icon: Icons.graphic_eq_rounded),
+                ),
             ]);
           },
         ),

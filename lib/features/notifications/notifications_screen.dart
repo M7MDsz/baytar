@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/formatting.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
@@ -33,27 +34,46 @@ class NotificationsScreen extends StatelessWidget {
           if (snap.hasError) {
             return const EmptyState(icon: Icons.cloud_off, message: 'تعذر تحميل الإشعارات.');
           }
-          if (!snap.hasData) return const Center(child: CircularProgressIndicator());
+          if (!snap.hasData) return const SkeletonList();
           final items = snap.data!;
           if (items.isEmpty) {
-            return const EmptyState(icon: Icons.notifications_none, message: 'لا توجد إشعارات.');
+            return const EmptyState(icon: Icons.notifications_none_rounded, message: 'لا توجد إشعارات.');
           }
-          return ListView.separated(
-            itemCount: items.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (context, i) {
-              final n = items[i];
-              final unread = n['read_at'] == null;
-              return ListTile(
-                tileColor: unread ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.35) : null,
-                leading: Icon(unread ? Icons.notifications_active : Icons.notifications_none),
-                title: Text(n['title'] as String, style: TextStyle(fontWeight: unread ? FontWeight.bold : null)),
-                subtitle: Text('${n['body']}\n${formatDayTime(parseTs(n['created_at']))}'),
-                isThreeLine: true,
-                onTap: () => _open(context, n),
-              );
-            },
-          );
+          return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+            for (final n in items)
+              Builder(builder: (context) {
+                final unread = n['read_at'] == null;
+                return ListCard(
+                  color: unread ? Palette.juniperSoft.withValues(alpha: 0.55) : Palette.surface,
+                  borderColor: unread ? Palette.juniper.withValues(alpha: 0.18) : Palette.line,
+                  leading: Stack(clipBehavior: Clip.none, children: [
+                    IconTile(
+                      unread ? Icons.notifications_active_rounded : Icons.notifications_none_rounded,
+                      tone: unread ? Tone.brand : Tone.neutral,
+                      size: 44,
+                    ),
+                    if (unread)
+                      PositionedDirectional(
+                        top: -2,
+                        end: -2,
+                        child: Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Palette.amber,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Palette.surface, width: 2),
+                          ),
+                        ),
+                      ),
+                  ]),
+                  title: n['title'] as String,
+                  subtitle: '${n['body']}\n${formatDayTime(parseTs(n['created_at']))}',
+                  trailing: const SizedBox.shrink(),
+                  onTap: () => _open(context, n),
+                );
+              }),
+          ]);
         },
       ),
     );
