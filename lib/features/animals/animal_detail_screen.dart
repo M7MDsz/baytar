@@ -3,13 +3,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/formatting.dart';
 import '../../core/widgets.dart';
-import '../outcomes/outcome.dart';
-import '../outcomes/outcomes_repository.dart';
+import '../history/consultation_history.dart';
 import 'animal.dart';
 import 'animal_photo.dart';
 import 'animals_repository.dart';
 
-/// Animal profile with its consultation history (approved outcomes).
+/// Animal profile. Its consultation history opens from «السجل الطبي» (US-22).
 class AnimalDetailScreen extends StatefulWidget {
   const AnimalDetailScreen({super.key, required this.animalId});
 
@@ -22,10 +21,7 @@ class AnimalDetailScreen extends StatefulWidget {
 class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
   Key _key = UniqueKey();
 
-  Future<(Animal, List<Outcome>)> _load() async => (
-        await AnimalsRepository().byId(widget.animalId),
-        await OutcomesRepository().forAnimal(widget.animalId),
-      );
+  Future<Animal> _load() => AnimalsRepository().byId(widget.animalId);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -39,11 +35,10 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
             },
           ),
         ]),
-        body: AsyncView<(Animal, List<Outcome>)>(
+        body: AsyncView<Animal>(
           key: _key,
           load: _load,
-          builder: (context, data, _) {
-            final (a, history) = data;
+          builder: (context, a, _) {
             final text = Theme.of(context).textTheme;
             return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
               AppCard(
@@ -69,15 +64,12 @@ class _AnimalDetailScreenState extends State<AnimalDetailScreen> {
                 InfoRow('الحساسية', a.allergies),
               ]),
               const SectionTitle('سجل الاستشارات'),
-              if (history.isEmpty)
-                const NoticeBanner('لا توجد استشارات مكتملة بعد.', icon: Icons.history, tone: Tone.neutral),
-              for (final o in history)
-                ListCard(
-                  leading: const IconTile(Icons.assignment_turned_in_outlined, tone: Tone.success),
-                  title: formatDay(o.consultationDate),
-                  subtitle: o.vetName ?? '',
-                  onTap: () => context.push('/outcomes/${o.appointmentId}'),
-                ),
+              ListCard(
+                leading: const IconTile(Icons.history_rounded),
+                title: 'السجل الطبي',
+                subtitle: 'استشارات ${a.name} السابقة ونتائجها',
+                onTap: () => context.push(animalHistoryPath(a.id)),
+              ),
             ]);
           },
         ),
