@@ -132,7 +132,7 @@ class _SignInScreenState extends State<SignInScreen> {
       );
 }
 
-/// Juniper header with the logo on a sand medallion, echoing the brand mark.
+/// Juniper header with the logo on a white medallion ringed in emerald.
 class _Hero extends StatelessWidget {
   const _Hero();
 
@@ -158,16 +158,16 @@ class _Hero extends StatelessWidget {
               height: 104,
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Palette.sand,
+                color: Palette.surface,
                 shape: BoxShape.circle,
-                border: Border.all(color: Palette.accent.withValues(alpha: 0.55), width: 3),
+                border: Border.all(color: Palette.accent, width: 3),
               ),
               child: Image.asset('assets/logo/baytar-mark.png'),
             ),
             const SizedBox(height: 16),
             Text('بيطار', style: text.displaySmall!.copyWith(color: Colors.white)),
             const SizedBox(height: 2),
-            Text('طبيبك البيطري عن بُعد', style: text.bodyLarge!.copyWith(color: Palette.sand.withValues(alpha: 0.85))),
+            Text('طبيبك البيطري عن بُعد', style: text.bodyLarge!.copyWith(color: Colors.white.withValues(alpha: 0.85))),
           ]),
         ),
       ),
