@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/formatting.dart';
 import '../../core/session.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
 import '../consultation/join_window.dart';
+import '../notifications/notification_bell.dart';
 import 'vet_appointment.dart';
 
 /// Paths owned by other stories: the veterinarian's case page (US-17) and video room (US-19).
@@ -46,7 +48,7 @@ class _VetAppointmentsScreenState extends State<VetAppointmentsScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('مواعيدي القادمة')),
+        appBar: AppBar(title: const Text('مواعيدي القادمة'), actions: const [NotificationBell()]),
         body: AsyncView<List<VetAppointment>>(
           key: _key,
           load: loadVetAppointments,
@@ -60,7 +62,7 @@ class _VetAppointmentsScreenState extends State<VetAppointmentsScreen> {
             final now = DateTime.now();
             final today = items.where((a) => isSameDay(a.startsAt, now)).toList();
             final later = items.where((a) => !isSameDay(a.startsAt, now)).toList();
-            return ListView(padding: const EdgeInsets.only(bottom: 24), children: [
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 24), children: [
               if (today.isNotEmpty) ...[
                 const SectionTitle('اليوم'),
                 for (final a in today) _AppointmentTile(a, showDay: false),
@@ -84,22 +86,20 @@ class _AppointmentTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final canJoin = canJoinNow(a.startsAt, UserRole.vet);
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: ListTile(
-        onTap: () => context.push(vetCasePath(a.caseId)),
-        leading: CircleAvatar(child: Text(formatTime(a.startsAt).split(' ').first)),
-        title: Text('${a.animalName} · ${a.speciesLabel}'),
-        subtitle: Text('${showDay ? formatDayTime(a.startsAt) : formatTime(a.startsAt)}\nالمالك: ${a.ownerFirstName}'),
-        isThreeLine: true,
-        trailing: canJoin
-            ? FilledButton(
-                style: FilledButton.styleFrom(minimumSize: const Size(0, 40)),
-                onPressed: () => context.push(vetConsultationPath(a.id)),
-                child: const Text('انضمام'),
-              )
-            : const Icon(Icons.chevron_left),
-      ),
+    return ListCard(
+      onTap: () => context.push(vetCasePath(a.caseId)),
+      color: canJoin ? Palette.amberSoft.withValues(alpha: 0.45) : Palette.surface,
+      borderColor: canJoin ? Palette.amber.withValues(alpha: 0.5) : Palette.line,
+      leading: SpeciesAvatar(a.species, radius: 26),
+      title: '${a.animalName} · ${a.speciesLabel}',
+      subtitle: '${showDay ? formatDayTime(a.startsAt) : formatTime(a.startsAt)}\nالمالك: ${a.ownerFirstName}',
+      trailing: canJoin
+          ? FilledButton(
+              style: FilledButton.styleFrom(minimumSize: const Size(0, 40), padding: const EdgeInsets.symmetric(horizontal: 16)),
+              onPressed: () => context.push(vetConsultationPath(a.id)),
+              child: const Text('انضمام'),
+            )
+          : null,
     );
   }
 }

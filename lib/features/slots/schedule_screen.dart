@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme.dart';
 import '../../core/errors.dart';
 import '../../core/formatting.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
+import '../notifications/notification_bell.dart';
 
 const _slotErrors = {
   'vet_not_verified': 'لا يمكنك نشر مواعيد قبل التحقق من ترخيصك.',
@@ -70,7 +72,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('جدول مواعيدي')),
+        appBar: AppBar(title: const Text('جدول مواعيدي'), actions: const [NotificationBell()]),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _add,
           icon: const Icon(Icons.add),
@@ -86,19 +88,23 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 EmptyState(icon: Icons.schedule, message: 'لم تنشر أي مواعيد بعد.'),
               ]);
             }
-            final scheme = Theme.of(context).colorScheme;
-            return ListView(padding: const EdgeInsets.fromLTRB(16, 8, 16, 96), children: [
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 96), children: [
               for (final s in slots)
-                Card(
-                  color: s.booked ? scheme.secondaryContainer : null,
-                  child: ListTile(
-                    leading: Icon(s.booked ? Icons.event_busy : Icons.event_available),
-                    title: Text(formatDayTime(s.startsAt)),
-                    subtitle: Text(s.booked ? 'محجوز' : 'متاح'),
-                    trailing: s.booked
-                        ? null
-                        : IconButton(tooltip: 'حذف', icon: const Icon(Icons.delete_outline), onPressed: () => _remove(s)),
+                ListCard(
+                  leading: IconTile(s.booked ? Icons.event_busy : Icons.event_available, tone: s.booked ? Tone.accent : Tone.success),
+                  title: formatDayTime(s.startsAt),
+                  details: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: StatusPill(s.booked ? 'محجوز' : 'متاح', tone: s.booked ? Tone.accent : Tone.success, dot: true),
                   ),
+                  trailing: s.booked
+                      ? null
+                      : IconButton(
+                          tooltip: 'حذف',
+                          color: Palette.danger,
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () => _remove(s),
+                        ),
                 ),
             ]);
           },

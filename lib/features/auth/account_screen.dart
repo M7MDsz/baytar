@@ -4,6 +4,7 @@ import '../../core/errors.dart';
 import '../../core/session.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
+import '../notifications/notification_bell.dart';
 import 'auth_repository.dart';
 
 /// Account tab for every role: details, push setting (US-35) and sign out (US-30).
@@ -38,7 +39,7 @@ class _AccountScreenState extends State<AccountScreen> {
     final p = Session.instance.profile;
     const roleNames = {UserRole.owner: 'مالك حيوان', UserRole.vet: 'طبيب بيطري', UserRole.admin: 'مشرف'};
     return Scaffold(
-      appBar: AppBar(title: const Text('حسابي')),
+      appBar: AppBar(title: const Text('حسابي'), actions: const [NotificationBell()]),
       body: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
         if (p != null) ...[
           AppCard(

@@ -34,7 +34,7 @@ class VetProfileScreen extends StatelessWidget {
                   AppCard(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
                     child: Column(children: [
-                      NameAvatar(v.fullName, radius: 46),
+                      DoctorAvatar(v.gender, radius: 48),
                       const SizedBox(height: 14),
                       Text(v.fullName, style: text.headlineSmall, textAlign: TextAlign.center),
                       if (v.rating != null) ...[

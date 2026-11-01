@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/formatting.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
+import '../notifications/notification_bell.dart';
 
 /// The veterinarian's verification status (US-31/US-32), or a prompt to finish registration.
 class VetStatusScreen extends StatelessWidget {
@@ -11,7 +12,7 @@ class VetStatusScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('ملفي المهني')),
+        appBar: AppBar(title: const Text('ملفي المهني'), actions: const [NotificationBell()]),
         body: AsyncView<Map<String, dynamic>?>(
           load: () => db.from('vet_profiles').select().eq('id', currentUserId!).maybeSingle(),
           builder: (context, v, _) {

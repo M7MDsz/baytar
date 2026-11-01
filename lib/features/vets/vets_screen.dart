@@ -5,6 +5,7 @@ import '../../app/theme.dart';
 import '../../core/catalog.dart';
 import '../../core/formatting.dart';
 import '../../core/widgets.dart';
+import '../notifications/notification_bell.dart';
 import 'vet_filters_sheet.dart';
 import 'vet_summary.dart';
 import 'vets_repository.dart';
@@ -54,6 +55,8 @@ class _VetsScreenState extends State<VetsScreen> {
             ),
             icon: Badge(isLabelVisible: !_filters.isEmpty, child: const Icon(Icons.tune)),
           ),
+          const SizedBox(width: 4),
+          const NotificationBell(),
         ]),
         body: AsyncView<List<VetSummary>>(
           key: _key,
@@ -98,7 +101,7 @@ class _VetCard extends StatelessWidget {
       padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 12, 16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          NameAvatar(v.fullName, radius: 30),
+          DoctorAvatar(v.gender, radius: 30),
           const SizedBox(width: 14),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
