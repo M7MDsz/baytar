@@ -7,6 +7,7 @@ import '../../core/supabase.dart';
 import '../../core/widgets.dart';
 import '../animals/animal.dart';
 import '../animals/animals_repository.dart';
+import '../voice/transcript_field.dart';
 import '../voice/voice_note.dart';
 import '../voice/voice_recorder_field.dart';
 import 'case_record.dart';
@@ -29,6 +30,7 @@ class CaseFormScreen extends StatefulWidget {
 class _CaseFormScreenState extends State<CaseFormScreen> {
   final _repo = CasesRepository();
   final _description = TextEditingController();
+  final _transcript = TranscriptController();
   List<Animal>? _animals;
   String? _animalId;
   VoiceNote? _voice;
@@ -59,6 +61,7 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
           _media = [...existing.media];
         }
       });
+      if (existing?.voicePath != null) _transcript.load(existing!.id);
     } catch (e) {
       setState(() => _loadError = e);
     }
@@ -78,6 +81,13 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
         voice: _voice,
         media: _media,
       );
+      // US-36: keep the uploaded recording (saving it again would replace it and clear its transcript),
+      // then save the owner's correction of the transcript, if any.
+      if (_voice?.localPath != null) {
+        final path = (await _repo.byId(_caseId!)).voicePath;
+        _voice = path == null ? null : VoiceNote.remote(path);
+      }
+      await _transcript.saveCorrection(_caseId!);
       return _caseId;
     } catch (e) {
       if (mounted) showSnack(context, friendlyError(e), error: true);
@@ -85,6 +95,22 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  /// US-36: a new recording is saved with the draft straight away and turned into text.
+  Future<void> _onVoiceChanged(VoiceNote? voice) async {
+    setState(() => _voice = voice);
+    _transcript.reset();
+    if (voice?.localPath != null) await _transcribe();
+  }
+
+  Future<void> _transcribe() async {
+    final id = await _saveDraft();
+    if (id != null && mounted) await _transcript.transcribe(id);
+  }
+
+  Future<void> _onSaveCorrection() async {
+    if (await _saveDraft() != null && mounted) showSnack(context, 'تم حفظ تصحيح النص.');
   }
 
   Future<void> _onSaveDraft() async {
@@ -139,6 +165,7 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
   @override
   void dispose() {
     _description.dispose();
+    _transcript.dispose();
     super.dispose();
   }
 
@@ -201,7 +228,11 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
               const SizedBox(height: 4),
               Text('أو سجّل وصفاً صوتياً:', style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Palette.muted)),
               const SizedBox(height: 8),
-              VoiceRecorderField(value: _voice, onChanged: (v) => setState(() => _voice = v)),
+              VoiceRecorderField(value: _voice, onChanged: _onVoiceChanged),
+              if (_voice != null) ...[
+                const SizedBox(height: 14),
+                TranscriptField(controller: _transcript, onTranscribe: _transcribe, onSaveCorrection: _onSaveCorrection),
+              ],
             ]),
           ),
           SectionCard(
