@@ -1,21 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/feature.dart';
-import '../../core/session.dart';
 import 'notifications_screen.dart';
 import 'push_service.dart';
 
-/// US-35.
+/// US-35. Opened from the bell in the header of every tab screen (see notification_bell.dart).
 final notificationsFeature = Feature(
-  tabs: [
-    HomeTab(
-      roles: UserRole.values.toSet(),
-      order: 80,
-      label: 'الإشعارات',
-      icon: Icons.notifications_outlined,
-      path: '/notifications',
-      builder: (_) => const NotificationsScreen(),
-    ),
+  routes: [
+    GoRoute(path: '/notifications', builder: (_, _) => const NotificationsScreen()),
   ],
   onSignedIn: registerForPush,
 );
