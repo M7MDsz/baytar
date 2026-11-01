@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/catalog.dart';
 import '../../core/formatting.dart';
 import '../../core/widgets.dart';
@@ -46,6 +47,11 @@ class _VetsScreenState extends State<VetsScreen> {
           IconButton(
             tooltip: 'تصفية',
             onPressed: _openFilters,
+            style: IconButton.styleFrom(
+              backgroundColor: _filters.isEmpty ? Palette.surface : Palette.juniper,
+              foregroundColor: _filters.isEmpty ? Palette.juniper : Colors.white,
+              side: BorderSide(color: _filters.isEmpty ? Palette.lineStrong : Palette.juniper),
+            ),
             icon: Badge(isLabelVisible: !_filters.isEmpty, child: const Icon(Icons.tune)),
           ),
         ]),
@@ -65,28 +71,69 @@ class _VetsScreenState extends State<VetsScreen> {
                       ),
               ]);
             }
-            return ListView(padding: const EdgeInsets.all(12), children: [
+            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
               if (vets.every((v) => !v.bookable))
                 const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Text('لا يوجد طبيب بيطري متاح حالياً. ستظهر المواعيد عند نشرها.'),
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: NoticeBanner('لا يوجد طبيب بيطري متاح حالياً. ستظهر المواعيد عند نشرها.', icon: Icons.event_busy),
                 ),
-              for (final v in vets)
-                Card(
-                  child: ListTile(
-                    onTap: () => context.push('/vets/${v.id}'),
-                    leading: CircleAvatar(child: Text(v.fullName.characters.first)),
-                    title: Text(v.fullName),
-                    subtitle: Text(
-                      '${labelList(specialtyLabels, v.specialties)}\n'
-                      '${v.nextAvailable == null ? 'لا توجد مواعيد متاحة' : 'أقرب موعد: ${formatDayTime(v.nextAvailable!)}'}',
-                    ),
-                    isThreeLine: true,
-                    trailing: const Icon(Icons.chevron_left),
-                  ),
-                ),
+              for (final v in vets) _VetCard(v),
             ]);
           },
         ),
       );
+}
+
+/// Avatar-led card: name, specialty chips and the nearest free time.
+class _VetCard extends StatelessWidget {
+  const _VetCard(this.v);
+
+  final VetSummary v;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return AppCard(
+      onTap: () => context.push('/vets/${v.id}'),
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 12, 16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          NameAvatar(v.fullName, radius: 30),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(v.fullName, style: text.titleMedium!.copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
+              Wrap(spacing: 6, runSpacing: 6, children: [
+                for (final s in v.specialties) TagChip(label(specialtyLabels, s)),
+              ]),
+            ]),
+          ),
+          const Icon(Icons.chevron_right, color: Palette.muted),
+        ]),
+        const SizedBox(height: 14),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: v.bookable ? Palette.successSoft : Palette.surfaceMuted,
+            borderRadius: BorderRadius.circular(Radii.tile),
+          ),
+          child: Row(children: [
+            Icon(v.bookable ? Icons.event_available : Icons.event_busy, size: 18, color: v.bookable ? Palette.success : Palette.muted),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                v.nextAvailable == null ? 'لا توجد مواعيد متاحة' : 'أقرب موعد: ${formatDayTime(v.nextAvailable!)}',
+                style: text.labelMedium!.copyWith(
+                  color: v.bookable ? Palette.success : Palette.muted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ]),
+        ),
+      ]),
+    );
+  }
 }

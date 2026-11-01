@@ -292,6 +292,28 @@ class StatusPill extends StatelessWidget {
   }
 }
 
+/// Quiet, non-interactive label for a specialty, species or language.
+class TagChip extends StatelessWidget {
+  const TagChip(this.label, {super.key, this.icon});
+
+  final String label;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        decoration: BoxDecoration(
+          color: Palette.canvas,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: Palette.line),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          if (icon != null) ...[Icon(icon, size: 14, color: Palette.muted), const SizedBox(width: 4)],
+          Text(label, style: Theme.of(context).textTheme.labelMedium!.copyWith(color: Palette.body)),
+        ]),
+      );
+}
+
 /// Rounded square with a tinted background and an icon, used at the start of list rows.
 class IconTile extends StatelessWidget {
   const IconTile(this.icon, {super.key, this.tone = Tone.brand, this.size = 48});
@@ -312,12 +334,18 @@ class IconTile extends StatelessWidget {
   }
 }
 
-/// Round avatar with the first letter of a person's name.
+/// Round avatar with the first letter of a person's name (a leading «د.» title is skipped).
 class NameAvatar extends StatelessWidget {
   const NameAvatar(this.name, {super.key, this.radius = 28});
 
   final String name;
   final double radius;
+
+  String get _initial {
+    final words = name.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty && w != 'د.' && w != 'د');
+    final word = words.isEmpty ? name.trim() : words.first;
+    return word.isEmpty ? '' : word.characters.first;
+  }
 
   @override
   Widget build(BuildContext context) => Container(
@@ -330,7 +358,7 @@ class NameAvatar extends StatelessWidget {
           border: Border.all(color: Palette.amber.withValues(alpha: 0.35), width: radius > 32 ? 3 : 2),
         ),
         child: Text(
-          name.isEmpty ? '' : name.characters.first,
+          _initial,
           style: TextStyle(fontSize: radius * 0.8, fontWeight: FontWeight.w700, color: Palette.juniper, height: 1.2),
         ),
       );

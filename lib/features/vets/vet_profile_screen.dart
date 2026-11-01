@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/catalog.dart';
 import '../../core/formatting.dart';
 import '../../core/widgets.dart';
@@ -27,45 +28,69 @@ class VetProfileScreen extends StatelessWidget {
               ]);
             }
             final text = Theme.of(context).textTheme;
-            return ListView(padding: const EdgeInsets.all(16), children: [
-              Center(child: CircleAvatar(radius: 40, child: Text(v.fullName.characters.first, style: text.headlineMedium))),
-              const SizedBox(height: 12),
-              Center(child: Text(v.fullName, style: text.headlineSmall)),
-              if (v.rating != null)
-                Center(
-                  child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.star, color: Colors.amber),
-                    Text(v.rating!.toStringAsFixed(1)),
-                  ]),
-                ),
-              const SizedBox(height: 16),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(children: [
-                    const Row(children: [
-                      Icon(Icons.verified, color: Colors.green),
-                      SizedBox(width: 8),
-                      Text('ترخيص موثّق من بيطار'),
+            return Column(children: [
+              Expanded(
+                child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+                  AppCard(
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                    child: Column(children: [
+                      NameAvatar(v.fullName, radius: 46),
+                      const SizedBox(height: 14),
+                      Text(v.fullName, style: text.headlineSmall, textAlign: TextAlign.center),
+                      if (v.rating != null) ...[
+                        const SizedBox(height: 4),
+                        Row(mainAxisSize: MainAxisSize.min, children: [
+                          const Icon(Icons.star_rounded, color: Palette.amber, size: 22),
+                          const SizedBox(width: 4),
+                          Text(v.rating!.toStringAsFixed(1), style: text.titleMedium!.copyWith(color: Palette.amberDeep)),
+                        ]),
+                      ],
+                      const SizedBox(height: 12),
+                      const StatusPill('ترخيص موثّق من بيطار', tone: Tone.success, icon: Icons.verified),
                     ]),
-                    const Divider(),
+                  ),
+                  InfoCard(children: [
                     InfoRow('رقم الترخيص', v.licenseNumber),
                     InfoRow('صالح حتى', formatDate(v.licenseExpiry)),
-                    InfoRow('التخصصات', labelList(specialtyLabels, v.specialties)),
-                    InfoRow('الحيوانات', labelList(speciesLabels, v.animalTypes)),
-                    InfoRow('اللغات', labelList(languageLabels, v.languages)),
                   ]),
+                  AppCard(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      _ChipGroup('التخصصات', [for (final c in v.specialties) label(specialtyLabels, c)]),
+                      const SizedBox(height: 16),
+                      _ChipGroup('الحيوانات', [for (final c in v.animalTypes) label(speciesLabels, c)]),
+                      const SizedBox(height: 16),
+                      _ChipGroup('اللغات', [for (final c in v.languages) label(languageLabels, c)]),
+                    ]),
+                  ),
+                  if ((v.bio ?? '').isNotEmpty) ...[
+                    const SectionTitle('نبذة'),
+                    AppCard(child: Text(v.bio!, style: text.bodyLarge)),
+                  ],
+                ]),
+              ),
+              BottomActionBar(children: [
+                FilledButton.icon(
+                  onPressed: v.bookable ? () => context.push(bookingPath(v.id, vetName: v.fullName)) : null,
+                  icon: const Icon(Icons.event_available),
+                  label: Text(v.bookable ? 'عرض المواعيد والحجز' : 'لا توجد مواعيد متاحة'),
                 ),
-              ),
-              if ((v.bio ?? '').isNotEmpty) ...[const SectionTitle('نبذة'), Text(v.bio!)],
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: v.bookable ? () => context.push(bookingPath(v.id, vetName: v.fullName)) : null,
-                icon: const Icon(Icons.event_available),
-                label: Text(v.bookable ? 'عرض المواعيد والحجز' : 'لا توجد مواعيد متاحة'),
-              ),
+              ]),
             ]);
           },
         ),
       );
+}
+
+class _ChipGroup extends StatelessWidget {
+  const _ChipGroup(this.title, this.labels);
+
+  final String title;
+  final List<String> labels;
+
+  @override
+  Widget build(BuildContext context) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(title, style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: Palette.muted)),
+        const SizedBox(height: 8),
+        Wrap(spacing: 6, runSpacing: 6, children: [for (final l in labels) TagChip(l)]),
+      ]);
 }
