@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -16,6 +17,15 @@ Future<String> uploadFile(String bucket, String path, File file, {String? conten
   await db.storage.from(bucket).upload(
         path,
         file,
+        fileOptions: FileOptions(contentType: contentType, upsert: true),
+      );
+  return path;
+}
+
+Future<String> uploadBytes(String bucket, String path, Uint8List bytes, {String? contentType}) async {
+  await db.storage.from(bucket).uploadBinary(
+        path,
+        bytes,
         fileOptions: FileOptions(contentType: contentType, upsert: true),
       );
   return path;

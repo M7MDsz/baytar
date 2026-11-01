@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart' show XFile;
+
 import '../../core/storage.dart';
 import '../../core/supabase.dart';
 import '../voice/voice_note.dart';
@@ -36,7 +39,10 @@ class CasesRepository {
 
     String? voicePath = voice?.remotePath;
     if (voice?.localPath != null) {
-      voicePath = await uploadFile(voiceBucket, userFilePath(caseId, 'm4a'), File(voice!.localPath!), contentType: 'audio/mp4');
+      final path = userFilePath(caseId, voiceExtension);
+      voicePath = kIsWeb
+          ? await uploadBytes(voiceBucket, path, await XFile(voice!.localPath!).readAsBytes(), contentType: voiceContentType)
+          : await uploadFile(voiceBucket, path, File(voice!.localPath!), contentType: voiceContentType);
     }
     await db.from('cases').update({'animal_id': animalId, 'description': text, 'voice_path': voicePath}).eq('id', caseId);
 
