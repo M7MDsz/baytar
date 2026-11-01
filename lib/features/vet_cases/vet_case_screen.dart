@@ -10,14 +10,14 @@ import '../animals/animal.dart';
 import '../case_review/info_request.dart';
 import '../case_review/info_request_card.dart';
 import '../case_review/media_gallery.dart';
+import '../case_summary/summary_card.dart';
+import '../case_summary/summary_review_panel.dart';
 import '../cases/case_record.dart';
 import '../consultation/join_window.dart';
 import '../outcomes/outcome.dart';
 import '../outcomes/referral_card.dart';
 import '../vet_appointments/vet_appointments_screen.dart';
 import '../vet_consultation/vet_consultation_screen.dart';
-import '../voice/voice_note.dart';
-import '../voice/voice_player.dart';
 
 class _VetCase {
   _VetCase(this.record, this.animal, this.requests, this.referrals, this.appointment);
@@ -29,7 +29,8 @@ class _VetCase {
   final Map<String, dynamic>? appointment;
 }
 
-/// US-17: an assigned case with the animal, the owner's text or voice description and every attachment.
+/// US-17: an assigned case with the animal, the owner's text or voice description and every attachment, and
+/// (US-25, US-27, US-28) the AI summary of that description (US-24) to compare, accept or disregard.
 /// From here the veterinarian can request information (US-18) or refer the case (US-21).
 class VetCaseScreen extends StatefulWidget {
   const VetCaseScreen({super.key, required this.caseId});
@@ -120,12 +121,11 @@ class _VetCaseScreenState extends State<VetCaseScreen> {
                 InfoRow('الحساسية', a.allergies),
                 if (startsAt != null) InfoRow('الموعد', formatDayTime(startsAt)),
               ]),
-              const SectionTitle('وصف المالك'),
-              AppCard(
-                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                  Text((c.description ?? '').isEmpty ? 'لا يوجد وصف مكتوب.' : c.description!, style: text.bodyLarge),
-                  if (c.voicePath != null) ...[const SizedBox(height: 12), VoicePlayer(note: VoiceNote.remote(c.voicePath!))],
-                ]),
+              SummaryReviewPanel(
+                caseId: c.id,
+                description: c.description,
+                voicePath: c.voicePath,
+                summaryBuilder: (content, status) => SummaryCard(content: content, status: status),
               ),
               const SectionTitle('المرفقات'),
               AppCard(child: MediaGallery(items: c.media)),
