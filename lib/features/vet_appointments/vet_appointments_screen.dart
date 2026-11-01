@@ -62,7 +62,7 @@ class _VetAppointmentsScreenState extends State<VetAppointmentsScreen> {
             final now = DateTime.now();
             final today = items.where((a) => isSameDay(a.startsAt, now)).toList();
             final later = items.where((a) => !isSameDay(a.startsAt, now)).toList();
-            return ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 24), children: [
+            return ListView(padding: pagePadding(context, top: 0), children: [
               if (today.isNotEmpty) ...[
                 const SectionTitle('اليوم'),
                 for (final a in today) _AppointmentTile(a, showDay: false),

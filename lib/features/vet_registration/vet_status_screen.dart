@@ -38,7 +38,7 @@ class VetStatusScreen extends StatelessWidget {
             };
             final (soft, strong) = toneColors(tone);
             final textTheme = Theme.of(context).textTheme;
-            return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+            return ListView(padding: pagePadding(context), children: [
               AppCard(
                 color: soft,
                 borderColor: soft,

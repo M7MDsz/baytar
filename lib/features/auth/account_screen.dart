@@ -40,7 +40,7 @@ class _AccountScreenState extends State<AccountScreen> {
     const roleNames = {UserRole.owner: 'مالك حيوان', UserRole.vet: 'طبيب بيطري', UserRole.admin: 'مشرف'};
     return Scaffold(
       appBar: AppBar(title: const Text('حسابي'), actions: const [NotificationBell()]),
-      body: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+      body: ListView(padding: pagePadding(context), children: [
         if (p != null) ...[
           AppCard(
             padding: const EdgeInsets.all(18),

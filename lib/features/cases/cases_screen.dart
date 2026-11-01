@@ -34,7 +34,7 @@ class _CasesScreenState extends State<CasesScreen> {
         ),
       ]);
     }
-    return ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 96), children: [
+    return ListView(padding: pagePadding(context, bottom: 96), children: [
       for (final c in cases)
         ListCard(
           leading: Stack(clipBehavior: Clip.none, children: [

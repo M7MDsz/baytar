@@ -47,7 +47,7 @@ class _MyAppointmentsScreenState extends State<MyAppointmentsScreen> {
 
   Widget _list(List<OwnerAppointment> items, String empty) => items.isEmpty
       ? ListView(children: [const SizedBox(height: 80), EmptyState(icon: Icons.event_note, message: empty)])
-      : ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+      : ListView(padding: pagePadding(context), children: [
           for (final a in items)
             ListCard(
               onTap: () => _open(a),

@@ -40,7 +40,7 @@ class _AnimalsScreenState extends State<AnimalsScreen> {
                   EmptyState(icon: Icons.pets, message: 'لم تضف أي حيوان بعد.\nابدأ بإضافة ملف لحيوانك.'),
                 ])
               : ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+                  padding: pagePadding(context, bottom: 96),
                   children: [
                     for (final a in animals)
                       ListCard(

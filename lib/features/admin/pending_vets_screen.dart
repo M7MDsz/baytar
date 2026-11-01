@@ -34,7 +34,7 @@ class _PendingVetsScreenState extends State<PendingVetsScreen> {
                   SizedBox(height: 100),
                   EmptyState(icon: Icons.task_alt, message: 'لا توجد طلبات بانتظار التحقق.'),
                 ])
-              : ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
+              : ListView(padding: pagePadding(context), children: [
                   for (final v in items)
                     ListCard(
                       leading: DoctorAvatar(v.gender, radius: 26),
