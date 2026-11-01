@@ -61,3 +61,7 @@ verify_jwt = false
 
 [functions.consultation-token]
 verify_jwt = true
+
+# US-24: called by the cases_request_summary trigger with a shared secret (AI_WEBHOOK_SECRET), not a user token.
+[functions.summarize-case]
+verify_jwt = false
