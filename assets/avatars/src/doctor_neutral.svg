@@ -8,7 +8,7 @@
     <path d="M102 192 L126 256" stroke="#D8D1C4" stroke-width="3" fill="none"/>
     <path d="M154 192 L130 256" stroke="#D8D1C4" stroke-width="3" fill="none"/>
     <rect x="154" y="222" width="30" height="22" rx="4" fill="#FFFFFF" stroke="#D8D1C4" stroke-width="2.5"/>
-    <path d="M162 222 v-12" stroke="#D9772B" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M162 222 v-12" stroke="#15803D" stroke-width="4.5" stroke-linecap="round"/>
     <ellipse cx="89" cy="128" rx="7" ry="10" fill="#CF9A72"/>
     <ellipse cx="167" cy="128" rx="7" ry="10" fill="#CF9A72"/>
     <ellipse cx="128" cy="124" rx="40" ry="47" fill="#E2AE86"/>
@@ -28,7 +28,7 @@
     <path d="M106 194 C98 212 96 228 90 238" stroke="#0E2A25" stroke-width="6" fill="none" stroke-linecap="round"/>
     <path d="M150 194 C156 210 158 220 154 230" stroke="#0E2A25" stroke-width="6" fill="none" stroke-linecap="round"/>
     <circle cx="154" cy="232" r="5" fill="#0E2A25"/>
-    <circle cx="88" cy="242" r="12" fill="#D9772B"/>
+    <circle cx="88" cy="242" r="12" fill="#15803D"/>
     <circle cx="88" cy="242" r="5" fill="#F4EEE2"/>
   </g>
 </svg>

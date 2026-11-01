@@ -2,7 +2,7 @@
   <defs><clipPath id="c"><circle cx="128" cy="128" r="128"/></clipPath></defs>
   <g clip-path="url(#c)">
     <rect width="256" height="256" fill="#F4EEE2"/>
-    <circle cx="128" cy="128" r="84" fill="#D9772B"/>
+    <circle cx="128" cy="128" r="84" fill="#15803D"/>
     <g fill="#F4EEE2">
       <ellipse cx="104" cy="94" rx="14" ry="19" transform="rotate(-10 104 94)"/>
       <ellipse cx="152" cy="94" rx="14" ry="19" transform="rotate(10 152 94)"/>
