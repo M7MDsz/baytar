@@ -730,7 +730,6 @@ class BottomActionBar extends StatelessWidget {
 }
 
 /// List padding for a page: 16 at the sides and, at the bottom, [bottom] plus the system inset.
-/// Inside the tab shell that inset includes the floating navigation bar, so the last item clears it.
 EdgeInsets pagePadding(BuildContext context, {double top = 4, double bottom = 24}) =>
     EdgeInsets.fromLTRB(16, top, 16, bottom + MediaQuery.paddingOf(context).bottom);
 

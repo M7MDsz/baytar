@@ -1,8 +1,4 @@
-import 'dart:math' as math;
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/physics.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/session.dart';
@@ -21,22 +17,7 @@ final _tabIcons = <IconData, (IconData, IconData)>{
   Icons.verified_user_outlined: (Icons.verified_user_outlined, Icons.verified_user),
 };
 
-/// Height of the bar itself: 8 + 56 + 8 padding plus the 1 px border top and bottom.
-const _barHeight = 74.0;
-
-/// Spring (stiffness 500, damping 30) for the highlight that slides behind the current tab.
-class _Spring extends Curve {
-  const _Spring();
-
-  static final _sim = SpringSimulation(const SpringDescription(mass: 1, stiffness: 500, damping: 30), 0, 1, 0);
-  static const seconds = 0.5;
-
-  @override
-  double transformInternal(double t) => _sim.x(t * seconds);
-}
-
-/// Floating, frosted bottom navigation built from the tabs registered for the signed-in user's role.
-/// The body scrolls behind it (see pagePadding in widgets.dart for the matching list inset).
+/// Floating bottom navigation built from the tabs registered for the signed-in user's role.
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key, required this.tabs, required this.location, required this.child});
 
@@ -51,85 +32,59 @@ class HomeShell extends StatelessWidget {
     if (mine.length < 2) return child;
     final found = mine.indexWhere((t) => location == t.path || location.startsWith('${t.path}/'));
     final selected = found < 0 ? 0 : found;
-    final radius = BorderRadius.circular(30);
-    // The page scrolls behind the frosted bar. Tell it how much of the bottom the bar covers,
-    // in both padding (lists) and viewPadding (floating action buttons).
-    final media = MediaQuery.of(context);
-    final covered = math.max(media.viewPadding.bottom, 12.0) + _barHeight;
     return Scaffold(
-      extendBody: true,
-      body: MediaQuery(
-        data: media.copyWith(
-          padding: media.padding.copyWith(bottom: covered),
-          viewPadding: media.viewPadding.copyWith(bottom: covered),
-        ),
-        child: child,
-      ),
+      body: child,
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        child: DecoratedBox(
+        child: Container(
+          height: 68,
+          padding: const EdgeInsets.symmetric(horizontal: 6),
           decoration: BoxDecoration(
-            borderRadius: radius,
+            color: Palette.surface,
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: Palette.line),
             boxShadow: const [
-              BoxShadow(color: Color(0x2E2A2118), blurRadius: 30, offset: Offset(0, 10), blurStyle: BlurStyle.outer),
+              BoxShadow(color: Color(0x1F0E2A25), blurRadius: 28, offset: Offset(0, 10)),
+              BoxShadow(color: Color(0x0D0E2A25), blurRadius: 4, offset: Offset(0, 1)),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: radius,
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.7),
-                  borderRadius: radius,
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.6)),
-                ),
-                child: SizedBox(
-                  height: 56,
-                  child: Stack(children: [
-                    AnimatedAlign(
-                      duration: const Duration(milliseconds: 500),
-                      curve: const _Spring(),
-                      alignment: AlignmentDirectional(-1 + 2 * selected / (mine.length - 1), 0),
-                      child: FractionallySizedBox(
-                        widthFactor: 1 / mine.length,
-                        heightFactor: 1,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [Palette.juniperSoft, Palette.juniperSoft.withValues(alpha: 0.3)],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+          child: Stack(children: [
+            // A short emerald bar just inside the top edge, above the current tab, sliding between tabs.
+            Positioned.fill(
+              child: AnimatedAlign(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeOut,
+                alignment: AlignmentDirectional(-1 + 2 * selected / (mine.length - 1), -1),
+                child: FractionallySizedBox(
+                  widthFactor: 1 / mine.length,
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Container(
+                      width: 20,
+                      height: 3,
+                      margin: const EdgeInsets.only(top: 4),
+                      decoration: BoxDecoration(color: Palette.accent, borderRadius: BorderRadius.circular(2)),
                     ),
-                    Row(children: [
-                      for (var i = 0; i < mine.length; i++)
-                        Expanded(
-                          child: _NavItem(tab: mine[i], selected: i == selected, onTap: () => context.go(mine[i].path)),
-                        ),
-                    ]),
-                  ]),
+                  ),
                 ),
               ),
             ),
-          ),
+            Row(children: [
+              for (var i = 0; i < mine.length; i++)
+                Expanded(
+                  child: _NavItem(tab: mine[i], selected: i == selected, onTap: () => context.go(mine[i].path)),
+                ),
+            ]),
+          ]),
         ),
       ),
     );
   }
 }
 
-/// Icon above a small label. The current tab's icon is filled with amber under a dark outline;
-/// the others are outlined in a soft ink. Shrinks a little while pressed.
-class _NavItem extends StatefulWidget {
+/// Icon above a small label: filled emerald with a semi-bold emerald label for the current tab,
+/// outlined grey with a regular grey label for the others.
+class _NavItem extends StatelessWidget {
   const _NavItem({required this.tab, required this.selected, required this.onTap});
 
   final HomeTab tab;
@@ -137,63 +92,40 @@ class _NavItem extends StatefulWidget {
   final VoidCallback onTap;
 
   @override
-  State<_NavItem> createState() => _NavItemState();
-}
-
-class _NavItemState extends State<_NavItem> {
-  bool _pressed = false;
-
-  void _press(bool down) => setState(() => _pressed = down);
-
-  Widget _icon() {
-    final (rest, active) = _tabIcons[widget.tab.icon] ?? (widget.tab.icon, widget.tab.icon);
-    if (!widget.selected) return Icon(rest, size: 24, color: Palette.body.withValues(alpha: 0.8));
-    // The paw has no outlined form, so it gets a drawn outline instead of an outlined icon on top.
-    if (widget.tab.icon == Icons.pets) {
-      return Icon(active, size: 24, color: Palette.accent, shadows: [
-        for (final o in const [Offset(1, 0), Offset(-1, 0), Offset(0, 1), Offset(0, -1)])
-          Shadow(color: Palette.ink, offset: o * 0.9),
-      ]);
-    }
-    return Stack(alignment: Alignment.center, children: [
-      Icon(active, size: 24, color: Palette.accent),
-      Icon(rest, size: 24, color: Palette.ink),
-    ]);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final selected = widget.selected;
+    final (rest, active) = _tabIcons[tab.icon] ?? (tab.icon, tab.icon);
+    final color = selected ? Palette.accent : Palette.navRest;
+    final Widget icon = AnimatedSwitcher(
+      duration: const Duration(milliseconds: 200),
+      child: Icon(selected ? active : rest, key: ValueKey(selected), size: 24, color: color),
+    );
     return Semantics(
       button: true,
       selected: selected,
-      label: widget.tab.label,
+      label: tab.label,
       excludeSemantics: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onTap,
-        onTapDown: (_) => _press(true),
-        onTapUp: (_) => _press(false),
-        onTapCancel: () => _press(false),
-        child: AnimatedScale(
-          scale: _pressed ? 0.9 : 1,
-          duration: const Duration(milliseconds: 120),
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            AnimatedSwitcher(duration: const Duration(milliseconds: 200), child: KeyedSubtree(key: ValueKey(selected), child: _icon())),
-            const SizedBox(height: 4),
-            Text(
-              widget.tab.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                height: 1.2,
-                fontWeight: FontWeight.w700,
-                color: selected ? Palette.ink : Palette.muted,
-              ),
-            ),
-          ]),
-        ),
+      child: InkResponse(
+        onTap: onTap,
+        radius: 32,
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          AnimatedScale(
+            scale: selected ? 1.08 : 1,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+            child: icon,
+          ),
+          const SizedBox(height: 5),
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 200),
+            style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                  fontSize: 11.5,
+                  height: 1.2,
+                  color: color,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                ),
+            child: Text(tab.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
+        ]),
       ),
     );
   }
