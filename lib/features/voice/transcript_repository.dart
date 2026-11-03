@@ -5,9 +5,10 @@ import 'transcript_state.dart';
 
 /// US-36: the draft's transcript on the live backend.
 class TranscriptRepository {
-  static const _columns = 'transcript, transcript_status, transcript_label';
+  static const _columns = 'transcript, transcript_status, transcript_label, transcript_pending_expired';
 
-  /// The transcript stored on the draft. `transcript_label` is a computed column of `cases`.
+  /// The transcript stored on the draft. `transcript_label` and `transcript_pending_expired` are computed columns
+  /// of `cases`.
   Future<SavedTranscript> fetch(String caseId) async =>
       SavedTranscript.fromRow(await db.from('cases').select(_columns).eq('id', caseId).single());
 
