@@ -24,6 +24,14 @@ void main() {
     expect(canChangeAppointment(_appointment(now.add(const Duration(hours: 2))), now: now), isFalse);
   });
 
+  test('a new time for a rescheduled appointment must also be more than 12 hours away (QA M-1)', () {
+    expect(changeCutoff, const Duration(hours: 12));
+    expect(isBeyondChangeCutoff(now.add(const Duration(minutes: 30)), now: now), isFalse);
+    expect(isBeyondChangeCutoff(now.add(const Duration(hours: 12)), now: now), isFalse);
+    expect(isBeyondChangeCutoff(now.add(const Duration(hours: 12, minutes: 1)), now: now), isTrue);
+    expect(isBeyondChangeCutoff(now.add(const Duration(days: 2)), now: now), isTrue);
+  });
+
   test('cancelled appointments cannot be changed', () {
     expect(canChangeAppointment(_appointment(now.add(const Duration(days: 3)), status: 'cancelled'), now: now), isFalse);
   });
