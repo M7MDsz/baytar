@@ -38,8 +38,12 @@ abstract final class Palette {
   /// Resting icons and labels in the bottom navigation.
   static const navRest = Color(0xFF6B7280);
 
+  /// Decorative edges: card outlines and dividers. Cards are recognised by their content, not their edge.
   static const line = Color(0xFFE8E3D9);
-  static const lineStrong = Color(0xFFD3CCBE);
+
+  /// The edge that tells a control apart: text fields, outlined buttons, chips, check boxes, the search bar.
+  /// Same warm grey family, dark enough for 3:1 (WCAG 1.4.11): 3.4:1 on white and 3.1:1 on the canvas.
+  static const lineStrong = Color(0xFF948B79);
 
   static const success = Color(0xFF1D7348);
   static const successSoft = Color(0xFFE2F2E8);
