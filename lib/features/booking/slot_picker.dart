@@ -11,12 +11,22 @@ import 'booking_repository.dart';
 /// A veterinarian's free slots grouped by day; exactly one can be selected.
 /// Reloads every 30 seconds so slots added, removed or booked by others show within a minute.
 class SlotPicker extends StatefulWidget {
-  const SlotPicker({super.key, required this.vetId, required this.selected, required this.onSelected, this.excludeSlotId});
+  const SlotPicker({
+    super.key,
+    required this.vetId,
+    required this.selected,
+    required this.onSelected,
+    this.excludeSlotId,
+    this.where,
+  });
 
   final String vetId;
   final String? selected;
   final ValueChanged<FreeSlot?> onSelected;
   final String? excludeSlotId;
+
+  /// Only slots that pass this test are offered (US-12 uses it for the 12-hour rule). Checked on every reload.
+  final bool Function(FreeSlot slot)? where;
 
   @override
   State<SlotPicker> createState() => _SlotPickerState();
@@ -39,7 +49,7 @@ class _SlotPickerState extends State<SlotPicker> {
       final slots = await BookingRepository().freeSlots(widget.vetId);
       if (!mounted) return;
       setState(() {
-        _slots = slots.where((s) => s.id != widget.excludeSlotId).toList();
+        _slots = slots.where((s) => s.id != widget.excludeSlotId && (widget.where?.call(s) ?? true)).toList();
         _error = null;
       });
       // The chosen slot was taken or removed meanwhile.

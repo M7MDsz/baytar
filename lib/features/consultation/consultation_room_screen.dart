@@ -48,14 +48,30 @@ class _ConsultationRoomScreenState extends State<ConsultationRoomScreen> {
     try {
       final access = await fetchRoomAccess(widget.appointmentId);
       await _room.connect(access.url, access.token);
-      await _room.localParticipant?.setMicrophoneEnabled(true);
-      await _room.localParticipant?.setCameraEnabled(true);
     } on JoinRefused catch (e) {
       _error = e.message;
     } catch (e) {
       _error = friendlyError(e);
+      // A connection that failed half way must not stay in the room behind the error screen.
+      await _room.disconnect();
     } finally {
       if (mounted) setState(() => _connecting = false);
+    }
+    if (_error != null) return;
+    await _setDevice(() async => _room.localParticipant?.setMicrophoneEnabled(true));
+    await _setDevice(() async => _room.localParticipant?.setCameraEnabled(true));
+  }
+
+  /// Microphone and camera are best effort: a refused permission keeps the call open with that device off,
+  /// and the user can try again from the controls.
+  Future<void> _setDevice(Future<void> Function() action) async {
+    try {
+      await action();
+    } catch (_) {
+      if (mounted) {
+        showSnack(context, 'تعذّر تشغيل الكاميرا أو الميكروفون. اسمح لبيطار باستخدامهما ثم أعد المحاولة من الأزرار.',
+            error: true);
+      }
     }
   }
 
@@ -165,12 +181,12 @@ class _ConsultationRoomScreenState extends State<ConsultationRoomScreen> {
               _RoundButton(
                 icon: micOn ? Icons.mic : Icons.mic_off,
                 tooltip: micOn ? 'كتم الصوت' : 'تشغيل الصوت',
-                onPressed: () => local?.setMicrophoneEnabled(!micOn),
+                onPressed: () => _setDevice(() async => local?.setMicrophoneEnabled(!micOn)),
               ),
               _RoundButton(
                 icon: camOn ? Icons.videocam : Icons.videocam_off,
                 tooltip: camOn ? 'إيقاف الكاميرا' : 'تشغيل الكاميرا',
-                onPressed: () => local?.setCameraEnabled(!camOn),
+                onPressed: () => _setDevice(() async => local?.setCameraEnabled(!camOn)),
               ),
               if (widget.panelBuilder != null)
                 _RoundButton(

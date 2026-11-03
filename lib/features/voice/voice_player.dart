@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../app/theme.dart';
@@ -39,7 +40,7 @@ class _VoicePlayerState extends State<VoicePlayer> {
     if (_state == PlayerState.paused) return _player.resume();
     final note = widget.note;
     final source = note.localPath != null
-        ? DeviceFileSource(note.localPath!)
+        ? (kIsWeb ? UrlSource(note.localPath!) : DeviceFileSource(note.localPath!))
         : UrlSource(await signedUrl(voiceBucket, note.remotePath!));
     await _player.play(source);
   }

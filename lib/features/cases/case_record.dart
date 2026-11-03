@@ -21,6 +21,16 @@ class MediaItem {
       );
 }
 
+/// After a draft is saved: the form's attachments in the same order, each new one ([MediaItem.localPath])
+/// replaced by what [upload] stored, so that saving again neither uploads it twice nor removes it.
+Future<List<MediaItem>> replaceUploaded(List<MediaItem> items, Future<MediaItem> Function(MediaItem local) upload) async => [
+      for (final m in items) m.localPath == null ? m : await upload(m),
+    ];
+
+/// The saved attachments the owner took off: every saved row whose id the form no longer lists.
+List<MediaItem> removedMedia({required List<MediaItem> saved, required Set<String> keptIds}) =>
+    [for (final s in saved) if (!keptIds.contains(s.id)) s];
+
 class CaseRecord {
   const CaseRecord({
     required this.id,

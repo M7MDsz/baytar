@@ -1,11 +1,10 @@
 // US-30: email + password sign-in with a lockout after 5 failed attempts in a row (15 minutes).
-// Supabase's own password hook needs a paid plan, so the counter lives here.
-// The reply never says whether the email or the password was wrong.
+// Supabase's own password hook needs a paid plan, so the counters live here (rules in attempts.ts).
+// The reply never says whether the email or the password was wrong. "email_not_confirmed" is returned only after
+// Supabase has accepted the password, so it reveals nothing to someone guessing (checked live for QA M-5).
 
 import { createClient } from "npm:@supabase/supabase-js@2";
-
-const MAX_FAILURES = 5;
-const LOCK_MINUTES = 15;
+import { activeLock, afterAccountFailure, afterClientFailure, clientAddress, clientKey } from "./attempts.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -25,34 +24,34 @@ Deno.serve(async (req) => {
   const { email: rawEmail, password } = await req.json().catch(() => ({}));
   if (typeof rawEmail !== "string" || typeof password !== "string") return json({ error: "bad_request" }, 400);
   const email = rawEmail.trim().toLowerCase();
+  const client = await clientKey(clientAddress(req.headers));
 
   const url = Deno.env.get("SUPABASE_URL")!;
   const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
   const now = new Date();
 
-  const { data: row } = await admin.from("login_attempts").select().eq("email", email).maybeSingle();
-  if (row?.locked_until && new Date(row.locked_until) > now) {
-    return json({ error: "locked", locked_until: row.locked_until }, 423);
-  }
+  const [{ data: mine }, { data: account }] = await Promise.all([
+    admin.from("login_attempts_by_client").select().match({ email, client }).maybeSingle(),
+    admin.from("login_attempts").select().eq("email", email).maybeSingle(),
+  ]);
+  const lock = activeLock(mine, now) ?? activeLock(account, now);
+  if (lock) return json({ error: "locked", locked_until: lock }, 423);
 
   const auth = createClient(url, Deno.env.get("SUPABASE_ANON_KEY")!, { auth: { persistSession: false } });
   const { data, error } = await auth.auth.signInWithPassword({ email, password });
 
   if (error || !data.session) {
     if (error?.code === "email_not_confirmed") return json({ error: "email_not_confirmed" }, 403);
-    // A lock that has run out starts a fresh count.
-    const previous = row && !(row.locked_until && new Date(row.locked_until) <= now) ? row.failures : 0;
-    const failures = previous + 1;
-    const lockedUntil = failures >= MAX_FAILURES ? new Date(now.getTime() + LOCK_MINUTES * 60_000).toISOString() : null;
-    await admin.from("login_attempts").upsert({
-      email,
-      failures: lockedUntil ? 0 : failures,
-      locked_until: lockedUntil,
-      updated_at: now.toISOString(),
-    });
+    const stamp = now.toISOString();
+    await Promise.all([
+      admin.from("login_attempts_by_client").upsert({ email, client, ...afterClientFailure(mine, now), updated_at: stamp }),
+      admin.from("login_attempts").upsert({ email, ...afterAccountFailure(account, now), updated_at: stamp }),
+    ]);
     return json({ error: "invalid_credentials" }, 401);
   }
 
-  await admin.from("login_attempts").delete().eq("email", email);
+  // A success ends this client's run of failures. The account-wide window is left to expire on its own, so a
+  // correct sign-in by the owner does not hand someone guessing from elsewhere a fresh count.
+  await admin.from("login_attempts_by_client").delete().match({ email, client });
   return json({ access_token: data.session.access_token, refresh_token: data.session.refresh_token });
 });

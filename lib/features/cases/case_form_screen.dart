@@ -74,13 +74,16 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
     }
     setState(() => _busy = true);
     try {
-      _caseId = await _repo.saveDraft(
+      final saved = await _repo.saveDraft(
         id: _caseId,
         animalId: _animalId!,
         description: _description.text,
         voice: _voice,
         media: _media,
       );
+      _caseId = saved.id;
+      // Keep the attachments as saved, so the next save neither uploads them again nor deletes them.
+      _media = saved.media;
       // US-36: keep the uploaded recording (saving it again would replace it and clear its transcript),
       // then save the owner's correction of the transcript, if any.
       if (_voice?.localPath != null) {

@@ -66,6 +66,8 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
                     vetId: a.vetId,
                     selected: _slot?.id,
                     onSelected: (s) => setState(() => _slot = s),
+                    // The new time must also be more than 12 hours away (QA M-1); the server refuses it otherwise.
+                    where: (s) => isBeyondChangeCutoff(s.startsAt),
                   ),
                 ),
               ]),

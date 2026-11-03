@@ -31,6 +31,7 @@ class _OutcomeFormScreenState extends State<OutcomeFormScreen> {
   bool _approved = false;
   bool _busy = false;
   bool _final = false;
+  Object? _loadError;
 
   @override
   void initState() {
@@ -38,6 +39,8 @@ class _OutcomeFormScreenState extends State<OutcomeFormScreen> {
     _load();
   }
 
+  /// Reads the saved outcome. If the read fails the form stays hidden behind an error with retry, so an
+  /// empty form can never be saved over an existing draft or shown as editable over an approved outcome.
   Future<void> _load() async {
     try {
       final row = await db.from('consultation_outcomes').select().eq('appointment_id', widget.appointmentId).maybeSingle();
@@ -47,9 +50,19 @@ class _OutcomeFormScreenState extends State<OutcomeFormScreen> {
         _notes.text = (row['owner_notes'] as String?) ?? '';
         _approved = row['status'] == 'approved';
       }
+    } catch (e) {
+      _loadError = e;
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _retry() {
+    setState(() {
+      _loading = true;
+      _loadError = null;
+    });
+    _load();
   }
 
   Future<void> _save({required bool approve}) async {
@@ -96,6 +109,16 @@ class _OutcomeFormScreenState extends State<OutcomeFormScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return Scaffold(appBar: AppBar(), body: const Center(child: CircularProgressIndicator()));
+    if (_loadError != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('توثيق نتيجة الاستشارة')),
+        body: EmptyState(
+          icon: Icons.cloud_off_rounded,
+          message: friendlyError(_loadError!),
+          action: OutlinedButton(onPressed: _retry, child: const Text('إعادة المحاولة')),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('توثيق نتيجة الاستشارة')),
       body: Form(
