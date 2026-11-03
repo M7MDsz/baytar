@@ -23,22 +23,21 @@ Future<void> registerForPush(Profile profile) async {
   // push-dispatch function sends with FCM HTTP v1 device tokens, so we keep them on purpose.
   // ignore: deprecated_member_use
   final token = await messaging.getToken();
-  if (token != null) await _saveToken(profile.id, token);
+  if (token != null) await _saveToken(token);
 
   if (_listening) return;
   _listening = true;
   // ignore: deprecated_member_use
   messaging.onTokenRefresh.listen((t) {
-    final uid = currentUserId;
-    if (uid != null) _saveToken(uid, t);
+    if (currentUserId != null) _saveToken(t);
   });
   FirebaseMessaging.onMessageOpenedApp.listen((m) => _open(m.data['route'] as String?));
   final initial = await messaging.getInitialMessage();
   if (initial != null) _open(initial.data['route'] as String?);
 }
 
-Future<void> _saveToken(String userId, String token) =>
-    db.from('profiles').update({'fcm_token': token}).eq('id', userId);
+/// Saves the token on the signed-in account and takes it off any other account that used this device (QA H-1).
+Future<void> _saveToken(String token) => db.rpc('set_push_token', params: {'p_token': token});
 
 void _open(String? route) {
   if (route != null && route.startsWith('/')) appRouter.push(route);

@@ -55,5 +55,14 @@ class AuthRepository {
     await db.auth.updateUser(UserAttributes(password: newPassword));
   }
 
-  Future<void> signOut() => db.auth.signOut();
+  /// Takes this device's push token off the account first, so the next account signed in here does not receive
+  /// its notifications (QA H-1). Signing out never fails or hangs because of that step.
+  Future<void> signOut() async {
+    try {
+      await db.rpc('set_push_token', params: {'p_token': null}).timeout(const Duration(seconds: 5));
+    } catch (_) {
+      // Offline or already signed out: the session still ends below.
+    }
+    await db.auth.signOut();
+  }
 }
