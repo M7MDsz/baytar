@@ -57,11 +57,21 @@ String _slotsLabel(int n) => switch (n) {
       _ => '${arabicDigits(n)} موعداً',
     };
 
-/// «الآن» inside the join window, otherwise «بعد …» in minutes, hours or days.
-String _countdown(DateTime startsAt) {
-  if (canJoinNow(startsAt, UserRole.vet)) return 'الآن';
-  final d = startsAt.difference(DateTime.now());
-  if (d.inMinutes < 60) return 'بعد ${arabicDigits(d.inMinutes.clamp(1, 59))} دقيقة';
+/// «الآن» inside the join window, «بدأ» once it has passed (QA L-3), otherwise «بعد …» in minutes, hours or days.
+String countdownLabel(DateTime startsAt, {DateTime? now}) {
+  final t = now ?? DateTime.now();
+  if (canJoinNow(startsAt, UserRole.vet, now: t)) return 'الآن';
+  final d = startsAt.difference(t);
+  if (d.isNegative) return 'بدأ';
+  if (d.inMinutes < 60) {
+    final m = d.inMinutes.clamp(1, 59);
+    return switch (m) {
+      1 => 'بعد دقيقة',
+      2 => 'بعد دقيقتين',
+      _ when m <= 10 => 'بعد ${arabicDigits(m)} دقائق',
+      _ => 'بعد ${arabicDigits(m)} دقيقة',
+    };
+  }
   if (d.inHours < 24) {
     final h = d.inHours;
     return switch (h) {
@@ -71,7 +81,7 @@ String _countdown(DateTime startsAt) {
       _ => 'بعد ${arabicDigits(h)} ساعة',
     };
   }
-  final days = _dayOf(startsAt).difference(_dayOf(DateTime.now())).inDays;
+  final days = _dayOf(startsAt).difference(_dayOf(t)).inDays;
   return switch (days) {
     1 => 'بعد يوم',
     2 => 'بعد يومين',
@@ -233,7 +243,7 @@ class _NextAppointment extends StatelessWidget {
               color: canJoin ? Palette.accent : Colors.white.withValues(alpha: 0.14),
               borderRadius: BorderRadius.circular(999),
             ),
-            child: Text(_countdown(a.startsAt), style: text.labelMedium!.merge(onDark).copyWith(fontWeight: FontWeight.w600)),
+            child: Text(countdownLabel(a.startsAt), style: text.labelMedium!.merge(onDark).copyWith(fontWeight: FontWeight.w600)),
           ),
         ]),
         const SizedBox(height: 14),
