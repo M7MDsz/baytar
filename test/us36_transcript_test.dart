@@ -56,6 +56,15 @@ void main() {
       expect(transcriptFromReply('oops').phase, TranscriptPhase.failed);
     });
 
+    test('a silent recording is a failure that asks for a new recording, not a retry', () {
+      for (final reason in ['silent', 'no_speech']) {
+        final t = transcriptFromReply({'status': 'failed', 'transcript': null, 'reason': reason});
+        expect([t.phase, t.noSound], [TranscriptPhase.failed, true], reason: reason);
+      }
+      expect(transcriptFromReply({'status': 'failed', 'transcript': null, 'reason': 'timeout'}).noSound, isFalse);
+      expect(transcriptFromReply({'status': 'done', 'transcript': 'نص'}).noSound, isFalse);
+    });
+
     test('error codes: a changed draft is read again, a missing recording can be retried, the rest fail gently', () {
       expect(transcribeErrorCode({'error': 'case_changed'}), 'case_changed');
       expect(transcribeErrorCode('not json'), isNull);

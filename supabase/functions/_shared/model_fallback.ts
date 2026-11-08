@@ -11,8 +11,11 @@
  */
 export const DEFAULT_FALLBACK_MODELS = ["gemini-3-flash-preview", "gemini-3.1-flash-lite"];
 
-/** Codes after which another model would not help: the content itself was refused, or nothing is configured. */
-const FINAL_CODES = new Set(["blocked", "not_configured"]);
+/**
+ * Codes after which another model must not be asked: the content was refused, nothing is configured, or a model
+ * heard no speech. "No speech" is an answer, not a failure; asking another model invites one that invents a sentence.
+ */
+const FINAL_CODES = new Set(["blocked", "not_configured", "no_speech"]);
 
 export type Attempt = { model: string; code: string };
 
