@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/errors.dart';
 import '../../core/widgets.dart';
 import 'auth_repository.dart';
 import 'auth_validators.dart';
 import 'terms_field.dart';
 
-/// US-29: owner sign-up. The account becomes active after the emailed code is entered.
+/// US-29: owner sign-up. The account becomes active after the emailed code is entered, or at once when the server
+/// confirms it without a code.
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
 
@@ -28,20 +28,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (!_form.currentState!.validate()) return;
     setState(() => _busy = true);
     try {
-      await AuthRepository().signUp(
+      final outcome = await AuthRepository().signUp(
         fullName: _name.text,
         email: _email.text,
         mobile: _mobile.text,
         password: _password.text,
         termsAccepted: _terms,
       );
-      if (mounted) context.push('/verify-email?email=${Uri.encodeComponent(_email.text.trim())}');
-    } on AccountExists {
-      if (mounted) showSnack(context, 'يوجد حساب مسجّل بهذا البريد الإلكتروني', error: true);
+      // Signed in already (no emailed code needed): the router opens the owner's home in Arabic.
+      if (outcome == SignUpOutcome.signedIn || !mounted) return;
+      context.push('/verify-email?email=${Uri.encodeComponent(_email.text.trim())}');
     } catch (e) {
-      if (mounted) {
-        showSnack(context, friendlyError(e, {'already registered': 'يوجد حساب مسجّل بهذا البريد الإلكتروني'}), error: true);
-      }
+      if (mounted) showSnack(context, signUpErrorMessage(e), error: true);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
