@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/errors.dart';
+import '../../core/formatting.dart';
 import '../../core/session.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
@@ -58,7 +59,7 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
           InfoCard(children: [
             InfoRow('الاسم', p.fullName),
-            InfoRow('البريد', p.email),
+            InfoRow('البريد', wrappableEmail(p.email)),
             InfoRow('الجوال', p.mobile),
             InfoRow('نوع الحساب', roleNames[p.role]),
           ]),

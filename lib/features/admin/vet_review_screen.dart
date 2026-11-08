@@ -83,7 +83,7 @@ class _VetReviewScreenState extends State<VetReviewScreen> {
               ),
               InfoCard(children: [
                 InfoRow('الاسم', v.fullName),
-                InfoRow('البريد', v.email),
+                InfoRow('البريد', wrappableEmail(v.email)),
                 InfoRow('الجوال', v.mobile),
                 InfoRow('رقم الترخيص', v.licenseNumber),
                 InfoRow('ينتهي في', formatDate(v.licenseExpiry)),

@@ -18,3 +18,7 @@ bool isSameDay(DateTime a, DateTime b) {
 DateTime parseTs(Object? v) => DateTime.parse(v as String).toLocal();
 
 DateTime? parseTsOrNull(Object? v) => v == null ? null : parseTs(v);
+
+/// An email that may wrap after the @ instead of mid-word: on a 360 px phone «admin.demo@example.com» broke as
+/// «…example.co» / «m».
+String wrappableEmail(String email) => email.replaceFirst('@', '@\u200B');
