@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
@@ -35,10 +36,14 @@ class _VoiceRecorderFieldState extends State<VoiceRecorderField> {
       }
       return;
     }
-    final dir = await getTemporaryDirectory();
-    final path = '${dir.path}/voice-${DateTime.now().millisecondsSinceEpoch}.m4a';
+    // In a browser there is no temp folder: the recording stays in memory and stop() returns a blob URL.
+    var path = '';
+    if (!kIsWeb) {
+      final dir = await getTemporaryDirectory();
+      path = '${dir.path}/voice-${DateTime.now().millisecondsSinceEpoch}.m4a';
+    }
     try {
-      await _recorder.start(const RecordConfig(encoder: AudioEncoder.aacLc), path: path);
+      await _recorder.start(kIsWeb ? webRecordConfig : const RecordConfig(encoder: AudioEncoder.aacLc), path: path);
     } catch (_) {
       if (mounted) showSnack(context, 'الميكروفون غير متاح على هذا الجهاز.', error: true);
       return;
