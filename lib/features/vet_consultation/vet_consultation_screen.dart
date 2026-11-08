@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/catalog.dart';
 import '../../core/errors.dart';
+import '../../core/navigation.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
 import '../consultation/consultation_room_screen.dart';
@@ -28,9 +29,10 @@ class VetConsultationScreen extends StatelessWidget {
         ],
       ),
     );
-    if (!context.mounted) return;
+    // Dismissing the dialog (tap outside, back) keeps the vet in the call.
+    if (!context.mounted || choice == null) return;
     if (choice != 'end') {
-      context.pop();
+      _close(context);
       return;
     }
     try {
@@ -39,10 +41,13 @@ class VetConsultationScreen extends StatelessWidget {
     } catch (e) {
       if (context.mounted) {
         showSnack(context, friendlyError(e, {'not_in_progress': 'هذه الاستشارة غير جارية.'}), error: true);
-        context.pop();
+        _close(context);
       }
     }
   }
+
+  /// Back to where the vet came from; opened from a link there is nothing to pop.
+  void _close(BuildContext context) => context.leave('/vet/schedule');
 
   @override
   Widget build(BuildContext context) => ConsultationRoomScreen(
