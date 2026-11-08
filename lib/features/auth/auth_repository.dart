@@ -60,8 +60,18 @@ enum SignUpOutcome {
 class SignInRefused implements Exception {
   const SignInRefused(this.reason);
 
-  /// invalid_credentials, locked or email_not_confirmed.
+  /// invalid_credentials, locked, email_not_confirmed, or unreachable when the sign-in server did not answer.
   final String reason;
+}
+
+/// What the sign-in function answers on purpose. Any other failure (no such function, a server error, an app pointed
+/// at another backend) is a connection problem and must not be shown as a wrong password.
+const signInRefusalCodes = {'invalid_credentials', 'locked', 'email_not_confirmed'};
+
+/// The reason to show for a failed call to the sign-in function.
+String signInFailureReason(Object? details) {
+  final code = details is Map ? details['error'] : null;
+  return code is String && signInRefusalCodes.contains(code) ? code : 'unreachable';
 }
 
 class AuthRepository {
@@ -103,8 +113,7 @@ class AuthRepository {
       final data = res.data as Map<String, dynamic>;
       await db.auth.setSession(data['refresh_token'] as String);
     } on FunctionException catch (e) {
-      final details = e.details;
-      throw SignInRefused(details is Map ? (details['error'] as String? ?? 'invalid_credentials') : 'invalid_credentials');
+      throw SignInRefused(signInFailureReason(e.details));
     }
   }
 

@@ -18,11 +18,20 @@ SWE 444 team project, King Saud University.
 
 ## Run it
 
-1. Install Flutter 3.47.8 (Dart 3.13) and the Supabase CLI. Older Flutter versions cannot resolve the packages.
-2. Start the backend locally: `supabase start` then `supabase db reset` (applies every file in `supabase/migrations`).
-3. Copy `env.example.json` to `env.json` and fill in the URL and publishable key printed by `supabase start`.
-4. `flutter pub get`
-5. `flutter run --dart-define-from-file=env.json`
+1. Install Flutter 3.47.8 (Dart 3.13). Older Flutter versions cannot resolve the packages.
+2. Team members: copy `env.json` from the team's private secrets folder (the handover pack's
+   `3 - Secrets (keep private)`) to the repo root. It points the app at the hosted Baytar project, where the demo
+   accounts and data live; their sign-in details are in the same folder. Never commit `env.json`.
+3. `flutter pub get`
+4. `flutter run -d chrome --dart-define-from-file=env.json`
+
+To just show the app without building it, use the demo in the handover pack (`START-BAYTAR-DEMO.cmd`).
+
+### Your own local backend (optional)
+
+`supabase start`, then `supabase db reset` (applies every file in `supabase/migrations`), then copy
+`env.example.json` to `env.json` with the URL and publishable key printed by `supabase start`. A local database
+starts empty: the demo accounts do not exist there, so create an account in the app first.
 
 Edge Function secrets (never commit them): `supabase secrets set LIVEKIT_URL=... LIVEKIT_API_KEY=... LIVEKIT_API_SECRET=... PUSH_WEBHOOK_SECRET=... FIREBASE_SERVICE_ACCOUNT='{...}'`.
 Push also needs `android/app/google-services.json` from the Firebase console, and two rows in `app_config`:

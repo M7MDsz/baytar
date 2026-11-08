@@ -35,9 +35,11 @@ class _SignInScreenState extends State<SignInScreen> {
       if (e.reason == 'email_not_confirmed') {
         context.push('/verify-email?email=${Uri.encodeComponent(_email.text.trim())}');
       } else {
-        setState(() => _error = e.reason == 'locked'
-            ? 'تم إيقاف تسجيل الدخول لهذا الحساب مؤقتاً بعد 5 محاولات خاطئة. حاول بعد 15 دقيقة.'
-            : 'البريد الإلكتروني أو كلمة المرور غير صحيحة');
+        setState(() => _error = switch (e.reason) {
+              'locked' => 'تم إيقاف تسجيل الدخول لهذا الحساب مؤقتاً بعد 5 محاولات خاطئة. حاول بعد 15 دقيقة.',
+              'unreachable' => 'تعذّر الوصول إلى خادم بيطار. تأكد من اتصال الإنترنت ثم حاول مرة أخرى.',
+              _ => 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+            });
       }
     } catch (e) {
       if (mounted) setState(() => _error = friendlyError(e));
