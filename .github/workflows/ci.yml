@@ -26,4 +26,4 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - run: deno test supabase/functions/summarize-case/ supabase/functions/transcribe-voice/ supabase/functions/sign-in/
+      - run: deno test supabase/functions/summarize-case/ supabase/functions/transcribe-voice/ supabase/functions/sign-in/ supabase/functions/_shared/

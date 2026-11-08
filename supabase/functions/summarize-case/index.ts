@@ -5,23 +5,36 @@
 // same case is safe: store_case_summary never replaces a summary that was generated or reviewed.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { FallbackError, modelChain, withModelFallback } from "../_shared/model_fallback.ts";
 import { AiError, buildSourceText, readSummary, summaryRequest, type SummaryResult, TIMEOUT_MS } from "./summary.ts";
 
-async function summarize(sourceText: string, model: string): Promise<SummaryResult> {
+/** The summary runs in the background (the database trigger does not wait), so the chain may take up to a minute. */
+const DEADLINE_MS = 60_000;
+
+/** Tries each model in the chain until one gives a usable summary; returns it with the model that answered. */
+async function summarize(sourceText: string, models: string[]): Promise<{ result: SummaryResult; model: string }> {
   const key = Deno.env.get("GEMINI_API_KEY");
   if (!key) throw new AiError("not_configured");
+  const body = JSON.stringify(summaryRequest(sourceText));
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify(summaryRequest(sourceText)),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-    if (!res.ok) throw new AiError(`http_${res.status}`);
-    return readSummary(await res.json(), sourceText);
+    const { value, model, attempts } = await withModelFallback(models, async (model, signal) => {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+        body,
+        signal,
+      });
+      if (!res.ok) throw new AiError(`http_${res.status}`);
+      return readSummary(await res.json(), sourceText);
+    }, { perAttemptMs: TIMEOUT_MS, deadlineMs: DEADLINE_MS });
+    if (attempts.length) console.warn(`summarize-case: ${model} answered after ${JSON.stringify(attempts)}`);
+    return { result: value, model };
   } catch (e) {
-    if (e instanceof AiError) throw e;
-    throw new AiError(e instanceof DOMException && e.name === "TimeoutError" ? "timeout" : "network");
+    if (e instanceof FallbackError) {
+      console.error(`summarize-case: every model failed ${JSON.stringify(e.attempts)}`);
+      throw new AiError(e.code);
+    }
+    throw e;
   }
 }
 
@@ -47,7 +60,8 @@ Deno.serve(async (req) => {
     return Response.json({ status: existing.status, skipped: true });
   }
 
-  const model = Deno.env.get("GEMINI_MODEL") || "gemini-3.5-flash";
+  const models = modelChain(Deno.env.get("GEMINI_MODEL"), Deno.env.get("GEMINI_FALLBACK_MODELS"));
+  let model = models[0];
   const sourceText = buildSourceText(c.description, c.transcript, c.transcript_status);
   let result: SummaryResult | null = null;
   let reason: string | null = null;
@@ -56,7 +70,7 @@ Deno.serve(async (req) => {
     reason = "no_text";
   } else {
     try {
-      result = await summarize(sourceText, model);
+      ({ result, model } = await summarize(sourceText, models));
     } catch (e) {
       reason = e instanceof AiError ? e.code : "error";
       console.error(`summarize-case ${caseId}: ${reason}`);
