@@ -93,7 +93,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   onChanged: (v) => setState(() => _caseId = v),
                   child: Column(children: [
                     for (final c in cases)
-                      _Choice(
+                      BookingChoice(
                         selected: _caseId == c.id,
                         child: RadioListTile<String>(
                           value: c.id,
@@ -128,9 +128,11 @@ class _BookingScreenState extends State<BookingScreen> {
       );
 }
 
-/// Bordered option row that turns juniper when chosen.
-class _Choice extends StatelessWidget {
-  const _Choice({required this.selected, required this.child});
+/// Bordered option row that turns juniper when chosen. The list tile sits on a transparent Material so its tap
+/// ripple shows: directly on the coloured box it was hidden (Flutter asserts "ListTile background color or ink
+/// splashes may be invisible").
+class BookingChoice extends StatelessWidget {
+  const BookingChoice({super.key, required this.selected, required this.child});
 
   final bool selected;
   final Widget child;
@@ -139,11 +141,12 @@ class _Choice extends StatelessWidget {
   Widget build(BuildContext context) => AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         margin: const EdgeInsets.only(bottom: 8),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: selected ? Palette.juniperSoft : Palette.surface,
           borderRadius: BorderRadius.circular(Radii.tile),
           border: Border.all(color: selected ? Palette.juniper : Palette.line, width: selected ? 1.6 : 1),
         ),
-        child: child,
+        child: Material(type: MaterialType.transparency, child: child),
       );
 }
