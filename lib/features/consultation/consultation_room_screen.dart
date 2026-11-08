@@ -162,7 +162,11 @@ class _ConsultationRoomScreenState extends State<ConsultationRoomScreen> {
                   border: Border.all(color: Colors.white24, width: 1.5),
                   boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 16, offset: Offset(0, 6))],
                 ),
-                child: ClipRRect(borderRadius: BorderRadius.circular(15), child: VideoTrackRenderer(localVideo)),
+                // Cover, not the default contain: a landscape camera in this portrait tile left black bands.
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: VideoTrackRenderer(localVideo, fit: VideoViewFit.cover),
+                ),
               ),
             ),
           Positioned(
