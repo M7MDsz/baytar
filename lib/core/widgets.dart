@@ -844,16 +844,25 @@ class _PressScaleState extends State<PressScale> {
 }
 
 /// A mint disc that pops in, then an emerald check that draws itself. Used after a booking or a submitted case.
+///
+/// The painter draws from the width, so the check keeps its own square size: an AlertDialog stretches its `icon`
+/// to the dialog's full width, which used to blow the disc up over the title.
 class SuccessCheck extends StatelessWidget {
   const SuccessCheck({super.key, this.size = 72});
 
   final double size;
 
   @override
-  Widget build(BuildContext context) => TweenAnimationBuilder<double>(
-        tween: Tween(begin: MediaQuery.disableAnimationsOf(context) ? 1 : 0, end: 1),
-        duration: const Duration(milliseconds: 750),
-        builder: (context, t, _) => CustomPaint(size: Size.square(size), painter: _CheckPainter(t)),
+  Widget build(BuildContext context) => Center(
+        heightFactor: 1,
+        child: SizedBox.square(
+          dimension: size,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: MediaQuery.disableAnimationsOf(context) ? 1 : 0, end: 1),
+            duration: const Duration(milliseconds: 750),
+            builder: (context, t, _) => CustomPaint(painter: _CheckPainter(t)),
+          ),
+        ),
       );
 }
 
