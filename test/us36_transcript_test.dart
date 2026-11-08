@@ -27,6 +27,12 @@ void main() {
       expect(t.phase, TranscriptPhase.loading);
     });
 
+    test('stuck in pending for more than 3 minutes counts as failed, so the owner can try again (QA M-7)', () {
+      final stuck = {'transcript': null, 'transcript_status': 'pending', 'transcript_label': 'pending'};
+      expect(SavedTranscript.fromRow({...stuck, 'transcript_pending_expired': true}).phase, TranscriptPhase.failed);
+      expect(SavedTranscript.fromRow({...stuck, 'transcript_pending_expired': false}).phase, TranscriptPhase.loading);
+    });
+
     test('that failed shows the gentle note; never transcribed offers to try', () {
       expect(SavedTranscript.fromRow({'transcript_status': 'failed', 'transcript_label': 'unavailable'}).phase,
           TranscriptPhase.failed);

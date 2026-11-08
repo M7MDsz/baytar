@@ -18,7 +18,7 @@ SWE 444 team project, King Saud University.
 
 ## Run it
 
-1. Install Flutter (stable) and the Supabase CLI.
+1. Install Flutter 3.47.8 (Dart 3.13) and the Supabase CLI. Older Flutter versions cannot resolve the packages.
 2. Start the backend locally: `supabase start` then `supabase db reset` (applies every file in `supabase/migrations`).
 3. Copy `env.example.json` to `env.json` and fill in the URL and publishable key printed by `supabase start`.
 4. `flutter pub get`
@@ -36,9 +36,10 @@ Administrators are not created from the app. Promote an account in SQL:
 ```
 flutter analyze
 flutter test
+deno test supabase/functions/summarize-case/ supabase/functions/transcribe-voice/
 ```
 
-GitHub Actions runs both on every push and pull request.
+GitHub Actions runs all three on every push and pull request, with Flutter pinned to 3.47.8.
 
 ## Where each story lives
 

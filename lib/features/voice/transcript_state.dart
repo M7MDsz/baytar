@@ -15,7 +15,8 @@ enum TranscriptPhase {
   failed,
 }
 
-/// A draft's transcript as stored on the case (`transcript`, `transcript_status`, `transcript_label`).
+/// A draft's transcript as stored on the case (`transcript`, `transcript_status`, `transcript_label`,
+/// `transcript_pending_expired`).
 class SavedTranscript {
   const SavedTranscript({required this.phase, required this.label, required this.text});
 
@@ -27,6 +28,8 @@ class SavedTranscript {
     final text = (row['transcript'] as String? ?? '').trim();
     final phase = switch (row['transcript_status']) {
       'done' when text.isNotEmpty => TranscriptPhase.ready,
+      // Still "pending" after 3 minutes: the function died on the way (QA M-7). Offer to try again.
+      'pending' when row['transcript_pending_expired'] == true => TranscriptPhase.failed,
       'pending' => TranscriptPhase.loading,
       'failed' => TranscriptPhase.failed,
       _ => TranscriptPhase.idle,
