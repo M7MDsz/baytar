@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/catalog.dart';
 import '../../core/errors.dart';
 import '../../core/formatting.dart';
+import '../../core/navigation.dart';
 import '../../core/storage.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
@@ -44,7 +44,7 @@ class _VetReviewScreenState extends State<VetReviewScreen> {
       await db.rpc('decide_vet', params: {'p_vet': widget.vetId, 'p_approve': approve, 'p_reason': reason});
       if (!mounted) return;
       showSnack(context, approve ? 'تم توثيق الطبيب' : 'تم رفض الطلب وإشعار الطبيب');
-      context.pop();
+      context.leave('/admin/vets');
     } catch (e) {
       if (mounted) showSnack(context, friendlyError(e, _decisionErrors), error: true);
     } finally {
