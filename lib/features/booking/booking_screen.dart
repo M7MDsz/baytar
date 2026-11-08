@@ -46,6 +46,7 @@ class _BookingScreenState extends State<BookingScreen> {
           icon: const SuccessCheck(),
           title: const Text('تم تأكيد الحجز'),
           content: Text('موعدك ${formatDayTime(_slot!.startsAt)}${widget.vetName == null ? '' : ' مع ${widget.vetName}'}.'),
+          actionsAlignment: MainAxisAlignment.center,
           actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً'))],
         ),
       );

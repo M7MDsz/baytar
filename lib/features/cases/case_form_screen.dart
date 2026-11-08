@@ -153,6 +153,7 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
           icon: const SuccessCheck(),
           title: const Text('تم إرسال الحالة'),
           content: Text('رقم الحالة: $caseNumber\nيمكنك الآن حجز موعد مع طبيب بيطري.'),
+          actionsAlignment: MainAxisAlignment.center,
           actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً'))],
         ),
       );
