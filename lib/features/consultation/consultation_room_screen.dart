@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:livekit_client/livekit_client.dart' hide Session;
 
 import '../../app/theme.dart';
 import '../../core/errors.dart';
+import '../../core/navigation.dart';
 import '../../core/session.dart';
 import '../../core/widgets.dart';
 import 'consultation_api.dart';
@@ -76,12 +76,15 @@ class _ConsultationRoomScreenState extends State<ConsultationRoomScreen> {
   }
 
   Future<void> _leave() async {
-    await _room.disconnect();
-    if (widget.onEnd != null && mounted) {
+    // The vet's End asks first and may stay in the call; leaving the page disconnects in dispose().
+    if (widget.onEnd != null) {
       await widget.onEnd!(context);
-    } else if (mounted) {
-      context.pop();
+      return;
     }
+    await _room.disconnect();
+    if (!mounted) return;
+    // Opened from a link there is nothing to pop.
+    context.leave('/appointments');
   }
 
   @override
@@ -162,7 +165,11 @@ class _ConsultationRoomScreenState extends State<ConsultationRoomScreen> {
                   border: Border.all(color: Colors.white24, width: 1.5),
                   boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 16, offset: Offset(0, 6))],
                 ),
-                child: ClipRRect(borderRadius: BorderRadius.circular(15), child: VideoTrackRenderer(localVideo)),
+                // Cover, not the default contain: a landscape camera in this portrait tile left black bands.
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(15),
+                  child: VideoTrackRenderer(localVideo, fit: VideoViewFit.cover),
+                ),
               ),
             ),
           Positioned(

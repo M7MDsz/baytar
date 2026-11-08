@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/errors.dart';
 import '../../core/formatting.dart';
+import '../../core/navigation.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
 import '../booking/booking_repository.dart';
@@ -32,7 +32,7 @@ class _RescheduleScreenState extends State<RescheduleScreen> {
       await db.rpc('reschedule_appointment', params: {'p_appointment': a.id, 'p_new_slot': _slot!.id});
       if (!mounted) return;
       showSnack(context, 'تم تغيير الموعد إلى ${formatDayTime(_slot!.startsAt)}');
-      context.pop(true);
+      context.leave('/appointments', true);
     } catch (e) {
       if (!mounted) return;
       showSnack(context, '${friendlyError(e, changeErrors)}\nموعدك الأصلي لم يتغير.', error: true);

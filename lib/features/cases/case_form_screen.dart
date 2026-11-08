@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
 import '../../core/errors.dart';
+import '../../core/navigation.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
 import '../animals/animal.dart';
@@ -10,6 +10,7 @@ import '../animals/animals_repository.dart';
 import '../voice/transcript_field.dart';
 import '../voice/voice_note.dart';
 import '../voice/voice_recorder_field.dart';
+import 'animal_picker.dart';
 import 'case_record.dart';
 import 'case_validation.dart';
 import 'cases_repository.dart';
@@ -119,7 +120,7 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
   Future<void> _onSaveDraft() async {
     if (await _saveDraft() == null || !mounted) return;
     showSnack(context, 'تم حفظ الحالة كمسودة. يمكنك إكمالها لاحقاً.');
-    context.pop(true);
+    context.leave('/cases', true);
   }
 
   /// US-07: names every missing item, saves, then sends the case and shows its case number.
@@ -155,7 +156,7 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
           actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً'))],
         ),
       );
-      if (mounted) context.pop(true);
+      if (mounted) context.leave('/cases', true);
     } catch (e) {
       if (mounted) {
         showSnack(context, friendlyError(e, {'missing_description': 'أضف وصفاً مكتوباً أو صوتياً قبل الإرسال.'}), error: true);
@@ -195,21 +196,9 @@ class _CaseFormScreenState extends State<CaseFormScreen> {
         absorbing: _busy,
         child: ListView(padding: const EdgeInsets.fromLTRB(16, 4, 16, 24), children: [
           AppCard(
-            child: DropdownButtonFormField<String>(
-              initialValue: _animalId,
-              borderRadius: BorderRadius.circular(16),
-              decoration: InputDecoration(labelText: requiredLabel('الحيوان')),
-              items: [
-                for (final a in _animals!)
-                  DropdownMenuItem(
-                    value: a.id,
-                    child: Row(children: [
-                      SpeciesAvatar(a.species, radius: 14),
-                      const SizedBox(width: 10),
-                      Text('${a.name} · ${a.speciesLabel}'),
-                    ]),
-                  ),
-              ],
+            child: AnimalPicker(
+              animals: _animals!,
+              value: _animalId,
               onChanged: (v) => setState(() => _animalId = v),
             ),
           ),

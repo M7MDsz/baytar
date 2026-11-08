@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/errors.dart';
+import '../../core/navigation.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
 import 'info_request.dart';
@@ -31,7 +31,7 @@ class _AnswerRequestScreenState extends State<AnswerRequestScreen> {
       await db.rpc('answer_info', params: {'p_request': widget.requestId, 'p_response': _response.text});
       if (!mounted) return;
       showSnack(context, 'تم إرسال ردك إلى الطبيب');
-      context.pop(true);
+      context.leave('/cases', true);
     } catch (e) {
       if (mounted) showSnack(context, friendlyError(e, {'already_answered': 'تم الرد على هذا الطلب مسبقاً.'}), error: true);
     } finally {

@@ -1,8 +1,61 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/errors.dart';
 import '../../core/supabase.dart';
 
 class AccountExists implements Exception {}
+
+/// The server refused a sign-up for a reason the user can act on. [reason] is a key of [signUpRefusals].
+class SignUpRefused implements Exception {
+  const SignUpRefused(this.reason);
+
+  final String reason;
+}
+
+const signUpRefusals = {
+  'email_invalid': 'البريد الإلكتروني غير صالح. تأكد منه وحاول مرة أخرى.',
+  'code_not_sent': 'تعذّر إرسال رمز التحقق الآن، حاول لاحقاً.',
+  'weak_password': 'كلمة المرور ضعيفة. استخدم 8 أحرف على الأقل تجمع بين حروف وأرقام.',
+};
+
+/// The Arabic text for a failed sign-up, shown in a snack bar on the owner and veterinarian forms.
+String signUpErrorMessage(Object error) => switch (error) {
+      AccountExists() => 'يوجد حساب مسجّل بهذا البريد الإلكتروني',
+      SignUpRefused(:final reason) => signUpRefusals[reason]!,
+      _ => friendlyError(error),
+    };
+
+/// Turns Supabase's sign-up error into [AccountExists] or [SignUpRefused]. Anything else is returned unchanged.
+Object signUpFailure(AuthException e) {
+  final message = e.message.toLowerCase();
+  return switch (e.code) {
+    'user_already_exists' || 'email_exists' => AccountExists(),
+    'email_address_invalid' => const SignUpRefused('email_invalid'),
+    'weak_password' => const SignUpRefused('weak_password'),
+    'email_address_not_authorized' ||
+    'over_email_send_rate_limit' ||
+    'over_request_rate_limit' ||
+    'unexpected_failure' =>
+      const SignUpRefused('code_not_sent'),
+    _ when message.contains('already registered') => AccountExists(),
+    _ when message.contains('sending confirmation') || message.contains('rate limit') || e.statusCode == '429' =>
+      const SignUpRefused('code_not_sent'),
+    _ => e,
+  };
+}
+
+/// With email confirmation on, sign-up returns no session and the 6-digit code comes next; with it off, the
+/// session is already there.
+SignUpOutcome signUpOutcome(Session? session) => session == null ? SignUpOutcome.codeSent : SignUpOutcome.signedIn;
+
+/// What happened after a successful sign-up.
+enum SignUpOutcome {
+  /// The server needs the 6-digit code from the email first.
+  codeSent,
+
+  /// The server confirmed the account straight away and returned a session: the user is signed in.
+  signedIn,
+}
 
 class SignInRefused implements Exception {
   const SignInRefused(this.reason);
@@ -12,8 +65,9 @@ class SignInRefused implements Exception {
 }
 
 class AuthRepository {
-  /// Creates the account and sends the 6-digit code. [role] is 'owner' or 'vet'.
-  Future<void> signUp({
+  /// Creates the account. [role] is 'owner' or 'vet'. Throws [AccountExists] or [SignUpRefused] with a reason the
+  /// screen can show. Returns [SignUpOutcome.signedIn] when the server confirmed the account without the emailed code.
+  Future<SignUpOutcome> signUp({
     required String fullName,
     required String email,
     required String mobile,
@@ -21,13 +75,19 @@ class AuthRepository {
     required bool termsAccepted,
     String role = 'owner',
   }) async {
-    final res = await db.auth.signUp(
-      email: email.trim().toLowerCase(),
-      password: password,
-      data: {'full_name': fullName.trim(), 'mobile': mobile.trim(), 'role': role, 'terms_accepted': termsAccepted},
-    );
+    final AuthResponse res;
+    try {
+      res = await db.auth.signUp(
+        email: email.trim().toLowerCase(),
+        password: password,
+        data: {'full_name': fullName.trim(), 'mobile': mobile.trim(), 'role': role, 'terms_accepted': termsAccepted},
+      );
+    } on AuthException catch (e) {
+      throw signUpFailure(e);
+    }
     // Supabase answers an already-registered email with a user that has no identities.
     if (res.user?.identities?.isEmpty ?? false) throw AccountExists();
+    return signUpOutcome(res.session);
   }
 
   Future<void> verifySignUpCode(String email, String code) =>

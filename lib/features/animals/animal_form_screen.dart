@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../app/theme.dart';
 import '../../core/catalog.dart';
 import '../../core/errors.dart';
 import '../../core/formatting.dart';
+import '../../core/navigation.dart';
 import '../../core/storage.dart';
 import '../../core/validators.dart';
 import '../../core/widgets.dart';
@@ -120,7 +120,7 @@ class _AnimalFormScreenState extends State<AnimalFormScreen> {
       );
       if (!mounted) return;
       showSnack(context, _editing ? 'تم حفظ التغييرات' : 'تم حفظ ملف الحيوان');
-      context.pop(true);
+      context.leave('/animals', true);
     } catch (e) {
       if (mounted) showSnack(context, friendlyError(e), error: true);
     } finally {

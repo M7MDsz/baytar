@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../core/errors.dart';
+import '../../core/navigation.dart';
 import '../../core/supabase.dart';
 import '../../core/widgets.dart';
 
@@ -32,7 +32,7 @@ class _ReferralScreenState extends State<ReferralScreen> {
       });
       if (!mounted) return;
       showSnack(context, 'تم حفظ الإحالة وإشعار المالك');
-      context.pop(true);
+      context.leave('/vet/schedule', true);
     } catch (e) {
       if (mounted) showSnack(context, friendlyError(e), error: true);
     } finally {

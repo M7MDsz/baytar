@@ -145,24 +145,11 @@ class _SummaryReviewPanelState extends State<SummaryReviewPanel> {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        Row(children: [
-          Expanded(
-            child: BusyButton(
-              busy: _busy,
-              onPressed: () => _review(ReviewAction.accept),
-              label: 'قبول الملخص',
-              icon: Icons.check_rounded,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: _busy ? null : () => _review(ReviewAction.disregard),
-              icon: const Icon(Icons.visibility_off_outlined),
-              label: const Text('تجاهل الملخص'),
-            ),
-          ),
-        ]),
+        SummaryDecisionButtons(
+          busy: _busy,
+          onAccept: () => _review(ReviewAction.accept),
+          onDisregard: () => _review(ReviewAction.disregard),
+        ),
         const SizedBox(height: 8),
         Text(
           'القبول يعني أن الملخص يطابق وصف المالك، وليس تشخيصاً.',
@@ -291,4 +278,31 @@ class _LoadError extends StatelessWidget {
           ),
         ),
       ]);
+}
+
+/// Accept and Disregard, side by side, or stacked when narrower than [minRowWidth]: side by side on a 360 px
+/// phone their labels broke onto two lines inside the buttons.
+class SummaryDecisionButtons extends StatelessWidget {
+  const SummaryDecisionButtons({super.key, required this.busy, required this.onAccept, required this.onDisregard});
+
+  static const minRowWidth = 320.0;
+
+  final bool busy;
+  final VoidCallback onAccept;
+  final VoidCallback onDisregard;
+
+  @override
+  Widget build(BuildContext context) {
+    final accept = BusyButton(busy: busy, onPressed: onAccept, label: 'قبول الملخص', icon: Icons.check_rounded);
+    final disregard = OutlinedButton.icon(
+      onPressed: busy ? null : onDisregard,
+      icon: const Icon(Icons.visibility_off_outlined),
+      label: const Text('تجاهل الملخص'),
+    );
+    return LayoutBuilder(
+      builder: (context, c) => c.maxWidth < minRowWidth
+          ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [accept, const SizedBox(height: 10), disregard])
+          : Row(children: [Expanded(child: accept), const SizedBox(width: 10), Expanded(child: disregard)]),
+    );
+  }
 }

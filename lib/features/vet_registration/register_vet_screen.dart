@@ -85,7 +85,7 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
         if (mounted) context.go('/vet/profile');
         return;
       }
-      await AuthRepository().signUp(
+      final outcome = await AuthRepository().signUp(
         fullName: _name.text,
         email: _email.text,
         mobile: _mobile.text,
@@ -93,13 +93,22 @@ class _RegisterVetScreenState extends State<RegisterVetScreen> {
         termsAccepted: _terms,
         role: 'vet',
       );
+      if (outcome == SignUpOutcome.signedIn) {
+        // No emailed code needed: the account is active, so the license step runs now with this session.
+        await application.submit();
+        await Session.instance.reload();
+        if (mounted) context.go('/vet/profile');
+        return;
+      }
       if (!mounted) return;
       // The email code comes first; the license is saved right after the account is active.
       await Navigator.of(context).push(MaterialPageRoute<void>(
         builder: (_) => VerifyEmailScreen(email: _email.text.trim(), onVerified: application.submit),
       ));
-    } on AccountExists {
-      if (mounted) showSnack(context, 'يوجد حساب مسجّل بهذا البريد الإلكتروني', error: true);
+    } on AccountExists catch (e) {
+      if (mounted) showSnack(context, signUpErrorMessage(e), error: true);
+    } on SignUpRefused catch (e) {
+      if (mounted) showSnack(context, signUpErrorMessage(e), error: true);
     } catch (e) {
       if (mounted) showSnack(context, friendlyError(e, vetRegistrationErrors), error: true);
     } finally {
