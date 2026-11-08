@@ -4,6 +4,7 @@
 // failed, and the case can always be sent with the recording alone. The owner may then correct the text.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { FallbackError, modelChain, withModelFallback } from "../_shared/model_fallback.ts";
 import {
   AiError,
   audioMimeType,
@@ -27,23 +28,33 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
+/** The app waits about 45 seconds for the transcript, so every model in the chain must be done well before that. */
+const DEADLINE_MS = 40_000;
+
 async function transcribe(audio: Uint8Array, mimeType: string): Promise<string> {
   const key = Deno.env.get("GEMINI_API_KEY");
   if (!key) throw new AiError("not_configured");
-  const model = Deno.env.get("GEMINI_MODEL") || "gemini-3.5-flash";
-  let res: Response;
+  const body = JSON.stringify(transcriptionRequest(toBase64(audio), mimeType));
+  const models = modelChain(Deno.env.get("GEMINI_MODEL"), Deno.env.get("GEMINI_FALLBACK_MODELS"));
   try {
-    res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify(transcriptionRequest(toBase64(audio), mimeType)),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-    if (!res.ok) throw new AiError(`http_${res.status}`);
-    return readTranscript(await res.json());
+    const { value, model, attempts } = await withModelFallback(models, async (model, signal) => {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+        body,
+        signal,
+      });
+      if (!res.ok) throw new AiError(`http_${res.status}`);
+      return readTranscript(await res.json());
+    }, { perAttemptMs: TIMEOUT_MS, deadlineMs: DEADLINE_MS });
+    if (attempts.length) console.warn(`transcribe-voice: ${model} answered after ${JSON.stringify(attempts)}`);
+    return value;
   } catch (e) {
-    if (e instanceof AiError) throw e;
-    throw new AiError(e instanceof DOMException && e.name === "TimeoutError" ? "timeout" : "network");
+    if (e instanceof FallbackError) {
+      console.error(`transcribe-voice: every model failed ${JSON.stringify(e.attempts)}`);
+      throw new AiError(e.code);
+    }
+    throw e;
   }
 }
 
