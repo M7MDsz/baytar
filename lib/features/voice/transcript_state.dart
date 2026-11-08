@@ -18,11 +18,14 @@ enum TranscriptPhase {
 /// A draft's transcript as stored on the case (`transcript`, `transcript_status`, `transcript_label`,
 /// `transcript_pending_expired`).
 class SavedTranscript {
-  const SavedTranscript({required this.phase, required this.label, required this.text});
+  const SavedTranscript({required this.phase, required this.label, required this.text, this.noSound = false});
 
   final TranscriptPhase phase;
   final TranscriptLabel label;
   final String text;
+
+  /// Failed because the recording had no sound in it (a muted or wrong microphone): record again, don't retry.
+  final bool noSound;
 
   factory SavedTranscript.fromRow(Map<String, dynamic> row) {
     final text = (row['transcript'] as String? ?? '').trim();
@@ -49,7 +52,9 @@ SavedTranscript transcriptFromReply(Object? data) {
   if (reply['status'] == 'done' && text.isNotEmpty) {
     return SavedTranscript(phase: TranscriptPhase.ready, label: TranscriptLabel.auto, text: text);
   }
-  return const SavedTranscript(phase: TranscriptPhase.failed, label: TranscriptLabel.none, text: '');
+  // 'silent': the server found no sound in the recording; 'no_speech': the model heard none.
+  final noSound = reply['reason'] == 'silent' || reply['reason'] == 'no_speech';
+  return SavedTranscript(phase: TranscriptPhase.failed, label: TranscriptLabel.none, text: '', noSound: noSound);
 }
 
 /// The short code in a transcribe-voice error body (`{error: 'case_changed'}`), if any.

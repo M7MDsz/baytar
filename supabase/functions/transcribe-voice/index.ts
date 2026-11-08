@@ -9,6 +9,7 @@ import {
   AiError,
   audioMimeType,
   isOwnVoicePath,
+  isSilentRecording,
   MAX_AUDIO_BYTES,
   readTranscript,
   TIMEOUT_MS,
@@ -99,7 +100,10 @@ Deno.serve(async (req) => {
     const { data: file, error } = await admin.storage.from("case-voice").download(voicePath);
     if (error || !file) throw new AiError("download_failed");
     if (file.size > MAX_AUDIO_BYTES) throw new AiError("too_large");
-    transcript = await transcribe(new Uint8Array(await file.arrayBuffer()), audioMimeType(voicePath, file.type));
+    const audio = new Uint8Array(await file.arrayBuffer());
+    // A silent recording (muted or wrong microphone) is answered at once and never reaches Gemini.
+    if (isSilentRecording(audio)) throw new AiError("silent");
+    transcript = await transcribe(audio, audioMimeType(voicePath, file.type));
   } catch (e) {
     reason = e instanceof AiError ? e.code : "error";
     console.error(`transcribe-voice ${caseId}: ${reason}`);

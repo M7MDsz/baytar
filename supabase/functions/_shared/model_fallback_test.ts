@@ -55,6 +55,19 @@ Deno.test("refused content is final: no other model is asked", async () => {
   assertEquals([e.code, calls], ["blocked", 1]);
 });
 
+Deno.test("a model that heard no speech is final: no other model is asked to try", async () => {
+  const tried: string[] = [];
+  const e = await assertRejects(
+    () =>
+      withModelFallback(["m1", "m2", "m3"], (model) => {
+        tried.push(model);
+        throw new Coded(model === "m1" ? "http_429" : "no_speech");
+      }, opts),
+    FallbackError,
+  );
+  assertEquals([e.code, tried], ["no_speech", ["m1", "m2"]]);
+});
+
 Deno.test("when every model fails, the last failure code is reported", async () => {
   const e = await assertRejects(
     () => withModelFallback(["m1", "m2"], (m) => Promise.reject(new Coded(m === "m1" ? "http_429" : "empty")), opts),

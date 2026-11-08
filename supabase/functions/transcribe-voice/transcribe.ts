@@ -13,6 +13,45 @@ export class AiError extends Error {
   }
 }
 
+/** Loudest sample below this (about -40 dBFS) means nothing was picked up: a muted or wrong microphone. */
+export const SILENCE_PEAK = 0.01;
+
+/**
+ * The loudest sample of a 16-bit PCM WAV recording (the web app records these), from 0 to 1, or null for any other
+ * format (phones record AAC, which is not decoded here).
+ */
+export function wavPeak(bytes: Uint8Array): number | null {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tag = (at: number) => String.fromCharCode(...bytes.subarray(at, at + 4));
+  if (bytes.length < 12 || tag(0) !== "RIFF" || tag(8) !== "WAVE") return null;
+  let pcm16 = false;
+  for (let at = 12; at + 8 <= bytes.length;) {
+    const id = tag(at);
+    const size = view.getUint32(at + 4, true);
+    const body = at + 8;
+    if (id === "fmt ") {
+      pcm16 = view.getUint16(body, true) === 1 && view.getUint16(body + 14, true) === 16;
+    } else if (id === "data") {
+      if (!pcm16) return null;
+      const end = Math.min(body + size, bytes.length) & ~1;
+      let peak = 0;
+      for (let i = body; i < end; i += 2) peak = Math.max(peak, Math.abs(view.getInt16(i, true)));
+      return peak / 32768;
+    }
+    at = body + size + (size % 2);
+  }
+  return null;
+}
+
+/**
+ * True when the recording is a WAV with no sound in it. Such a recording is never sent to Gemini: given silence, a
+ * model can invent a believable description, which is worse than no transcript.
+ */
+export function isSilentRecording(bytes: Uint8Array): boolean {
+  const peak = wavPeak(bytes);
+  return peak !== null && peak < SILENCE_PEAK;
+}
+
 /** Recordings are saved as <owner id>/<case id>/<file> (US-04). Anything else is not this owner's recording. */
 export function isOwnVoicePath(path: string, ownerId: string, caseId: string): boolean {
   const parts = path.split("/");

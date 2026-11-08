@@ -24,6 +24,9 @@ class TranscriptController extends ChangeNotifier {
 
   TranscriptPhase phase = TranscriptPhase.idle;
   TranscriptLabel label = TranscriptLabel.none;
+
+  /// The last attempt failed because the recording was silent.
+  bool noSound = false;
   String _saved = '';
 
   /// Each request gets a number; a reply that arrives after a newer request (or a reset) is ignored.
@@ -85,6 +88,7 @@ class TranscriptController extends ChangeNotifier {
     if (_disposed) return;
     phase = s.phase;
     label = s.label;
+    noSound = s.noSound;
     _saved = s.text;
     if (text.text != s.text) text.text = s.text;
     _notify();
@@ -195,6 +199,13 @@ class TranscriptField extends StatelessWidget {
               ),
             ),
         ]);
+      case TranscriptPhase.failed when controller.noSound:
+        // Nothing was heard: trying again would send the same silence, so ask for a new recording instead.
+        return const NoticeBanner(
+          'لم يُسمع أي صوت في التسجيل. تأكد أن الميكروفون يعمل وغير مكتوم، ثم احذف التسجيل وسجّل من جديد.',
+          icon: Icons.mic_off_rounded,
+          tone: Tone.danger,
+        );
       case TranscriptPhase.failed:
         return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           const NoticeBanner(
