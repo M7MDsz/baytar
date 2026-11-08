@@ -90,8 +90,9 @@ class _ConsultationRoomScreenState extends State<ConsultationRoomScreen> {
   @override
   void dispose() {
     _room.removeListener(_changed);
-    _room.disconnect();
-    _room.dispose();
+    // Dispose only once the disconnect has finished. Disposing straight away let LiveKit deliver the other side
+    // leaving into a disposed room, which threw in the background after the vet had moved on to the outcome form.
+    _room.disconnect().whenComplete(_room.dispose);
     super.dispose();
   }
 
