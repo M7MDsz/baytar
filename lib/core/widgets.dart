@@ -15,6 +15,8 @@ void showSnack(BuildContext context, String message, {bool error = false}) {
             ])
           : Text(message),
       backgroundColor: error ? Theme.of(context).colorScheme.error : null,
+      // A problem stays long enough to read; the 4-second default was gone before people noticed it.
+      duration: error ? const Duration(seconds: 6) : const Duration(seconds: 4),
     ));
 }
 
