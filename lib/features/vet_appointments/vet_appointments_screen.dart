@@ -56,7 +56,7 @@ class _VetAppointmentsScreenState extends State<VetAppointmentsScreen> {
             if (items.isEmpty) {
               return ListView(children: const [
                 SizedBox(height: 120),
-                EmptyState(icon: Icons.event_available, message: 'No upcoming appointments\nلا توجد مواعيد قادمة'),
+                EmptyState(icon: Icons.event_available, message: 'لا توجد مواعيد قادمة'),
               ]);
             }
             final now = DateTime.now();
