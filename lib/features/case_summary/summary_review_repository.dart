@@ -10,11 +10,7 @@ class SummaryReviewRepository {
     return VetCaseSummary.fromRow(rows.first as Map<String, dynamic>);
   }
 
-  /// US-26: saves the veterinarian's version of a generated or edited summary. The AI's own content is kept.
-  Future<SummaryStatus> edit(String caseId, SummaryContent content) async => SummaryStatus.parse(
-      await db.rpc('edit_summary', params: {'p_case': caseId, 'p_content': content.toJson()}));
-
-  /// Accepts or disregards a generated (or edited) summary, once. Returns the stored status.
+  /// Accepts or disregards a generated summary, once. Returns the stored status.
   Future<SummaryStatus> review(String caseId, ReviewAction action) async =>
       SummaryStatus.parse(await db.rpc('review_summary', params: {'p_case': caseId, 'p_action': action.name}));
 }

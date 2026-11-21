@@ -55,15 +55,11 @@ class VetProfile extends VetSummary {
     super.gender,
     super.bio,
     this.rating,
-    this.ratingCount = 0,
   });
 
   final String licenseNumber;
   final DateTime licenseExpiry;
   final double? rating;
-
-  /// US-38: how many ratings the average is from.
-  final int ratingCount;
 
   factory VetProfile.fromMap(Map<String, dynamic> m) => VetProfile(
         id: m['id'] as String,
@@ -77,7 +73,6 @@ class VetProfile extends VetSummary {
         licenseExpiry: DateTime.parse(m['license_expiry'] as String),
         bio: m['bio'] as String?,
         rating: (m['rating'] as num?)?.toDouble(),
-        ratingCount: (m['rating_count'] as num?)?.toInt() ?? 0,
       );
 }
 

@@ -13,9 +13,6 @@ const summaryReviewErrors = {
   'no_summary_to_review': 'لا يوجد ملخص بانتظار المراجعة.',
   'not_assigned': 'هذه الحالة غير مسندة إليك.',
   'bad_action': 'تعذّر تنفيذ هذا الإجراء.',
-  'no_summary_to_edit': 'لا يوجد ملخص يمكن تعديله.',
-  'bad_summary': 'أبقِ عنصراً واحداً على الأقل في الملخص، ولا يزيد أي عنصر على ٣٠٠ حرف.',
-  'quote_not_from_owner': 'لا يمكن نسب كلام إلى المالك لم يكتبه.',
 };
 
 /// US-25: what `vet_case_summary` returns for one case: the owner's original description, the recording and its
@@ -30,9 +27,6 @@ class VetCaseSummary {
     this.content,
     this.reviewerName,
     this.reviewedAt,
-    this.aiContent,
-    this.editorName,
-    this.editedAt,
   });
 
   /// The owner's original text, exactly as sent. Never replaced by the summary.
@@ -47,14 +41,6 @@ class VetCaseSummary {
   final String? reviewerName;
   final DateTime? reviewedAt;
 
-  /// US-26: what the AI wrote, when the veterinarian edited it ([content] is then their latest version), and who
-  /// edited it when. Null for a summary that was never edited.
-  final SummaryContent? aiContent;
-  final String? editorName;
-  final DateTime? editedAt;
-
-  bool get edited => editedAt != null;
-
   factory VetCaseSummary.fromRow(Map<String, dynamic> m) {
     final status = SummaryStatus.parse(m['summary_status']);
     final label = TranscriptLabel.parse(m['transcript_label']);
@@ -67,9 +53,6 @@ class VetCaseSummary {
       content: status.hasContent ? SummaryContent.fromJson(m['summary_content']) : null,
       reviewerName: m['reviewed_by_name'] as String?,
       reviewedAt: parseTsOrNull(m['reviewed_at']),
-      aiContent: status.hasContent ? SummaryContent.fromJson(m['ai_content']) : null,
-      editorName: m['edited_by_name'] as String?,
-      editedAt: parseTsOrNull(m['edited_at']),
     );
   }
 }
@@ -87,16 +70,5 @@ String? reviewCaption(SummaryStatus status, String? reviewerName, DateTime? revi
   return [
     '$verb ${doctorTitle(reviewerName)}',
     if (reviewedAt != null) DateFormat('d MMMM h:mm a', 'ar').format(reviewedAt.toLocal()),
-  ].join(' · ');
-}
-
-/// US-26: after an edit, who edited it and when, and that it still comes from the AI, for example
-/// «عدّله د. سارة · 12 نوفمبر 9:40 م · الأصل من الذكاء الاصطناعي». Null for a summary that was never edited.
-String? editCaption(String? editorName, DateTime? editedAt) {
-  if (editedAt == null) return null;
-  return [
-    'عدّله ${doctorTitle(editorName)}',
-    DateFormat('d MMMM h:mm a', 'ar').format(editedAt.toLocal()),
-    'الأصل من الذكاء الاصطناعي',
   ].join(' · ');
 }
