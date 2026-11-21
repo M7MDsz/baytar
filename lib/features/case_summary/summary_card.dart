@@ -26,9 +26,11 @@ String? summaryStateMessage(SummaryStatus status, SummaryContent? content) {
   };
 }
 
-/// The review pill: waiting, accepted or disregarded. A disregarded summary is never shown as accepted.
+/// The review pill: waiting, edited (US-26), accepted or disregarded. A disregarded summary is never shown as
+/// accepted.
 (String, Tone, IconData)? summaryReviewPill(SummaryStatus status) => switch (status) {
       SummaryStatus.generated => ('بانتظار مراجعتك', Tone.accent, Icons.schedule_rounded),
+      SummaryStatus.edited => ('عدّله الطبيب · بانتظار القرار', Tone.brand, Icons.edit_rounded),
       SummaryStatus.accepted => ('مقبول', Tone.success, Icons.check_circle_rounded),
       SummaryStatus.disregarded => ('تم تجاهله', Tone.neutral, Icons.visibility_off_outlined),
       _ => null,
