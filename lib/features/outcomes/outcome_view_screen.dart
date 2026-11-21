@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../../app/consultation_sections.dart';
 import '../../core/formatting.dart';
 import '../../core/widgets.dart';
 import 'outcome.dart';
 import 'outcomes_repository.dart';
 import 'referral_card.dart';
 
-/// US-16: read-only consultation outcome for the owner.
+/// US-16: read-only consultation outcome for the owner, followed by the sections other parts add (treatment
+/// notes, rating; see ConsultationSection).
 class OutcomeViewScreen extends StatelessWidget {
   const OutcomeViewScreen({super.key, required this.appointmentId});
 
@@ -27,12 +29,14 @@ class OutcomeViewScreen extends StatelessWidget {
           builder: (context, data, _) {
             final (o, referrals) = data;
             if (o == null) {
-              return ListView(children: const [
-                SizedBox(height: 120),
-                EmptyState(
+              // A section (a treatment note) can arrive before the outcome is approved: show it under the message.
+              return ListView(padding: const EdgeInsets.fromLTRB(16, 0, 16, 24), children: [
+                const SizedBox(height: 80),
+                const EmptyState(
                   icon: Icons.hourglass_empty,
                   message: 'لم يحفظ الطبيب نتيجة هذه الاستشارة بعد.\nستصلك النتيجة هنا عند اعتمادها.',
                 ),
+                ...consultationSectionWidgets(context, appointmentId),
               ]);
             }
             final text = Theme.of(context).textTheme;
@@ -60,6 +64,7 @@ class OutcomeViewScreen extends StatelessWidget {
                   child: SelectableText(o.ownerNotes!, style: text.bodyLarge),
                 ),
               for (final r in referrals) ReferralCard(referral: r),
+              ...consultationSectionWidgets(context, appointmentId),
             ]);
           },
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/consultation_sections.dart';
 import '../../app/theme.dart';
 import '../../core/errors.dart';
 import '../../core/formatting.dart';
@@ -10,7 +11,7 @@ import 'consultation_history.dart';
 import 'history_repository.dart';
 
 /// US-23 Open a Past Consultation Record: the case description, the veterinarian's documented outcome (only once
-/// approved) and the referral, if any. Read-only. The header shows straight away from the history row ([preview]),
+/// approved), the referral, if any, and the sections other parts add (see ConsultationSection). Read-only. The header shows straight away from the history row ([preview]),
 /// so the doctor avatar flies in from the list while the rest loads.
 class ConsultationRecordScreen extends StatefulWidget {
   const ConsultationRecordScreen({super.key, required this.appointmentId, this.preview});
@@ -127,6 +128,7 @@ class _ConsultationRecordScreenState extends State<ConsultationRecordScreen> {
             createdAt: r.referredAt ?? r.startsAt,
           ),
         ),
+      ...consultationSectionWidgets(context, r.appointmentId),
     ];
   }
 }
