@@ -6,12 +6,13 @@ import '../../core/formatting.dart';
 import '../../core/widgets.dart';
 import '../outcomes/outcome.dart';
 import '../outcomes/referral_card.dart';
+import '../ratings/rating_section.dart';
 import '../treatment_notes/treatment_notes_section.dart';
 import 'consultation_history.dart';
 import 'history_repository.dart';
 
 /// US-23 Open a Past Consultation Record: the case description, the veterinarian's documented outcome (only once
-/// approved), the referral, if any, and the treatment notes (US-37). Read-only. The header shows straight away from the history row ([preview]),
+/// approved), the referral, if any, the treatment notes (US-37) and the owner's rating (US-38). Read-only. The header shows straight away from the history row ([preview]),
 /// so the doctor avatar flies in from the list while the rest loads.
 class ConsultationRecordScreen extends StatefulWidget {
   const ConsultationRecordScreen({super.key, required this.appointmentId, this.preview});
@@ -129,6 +130,7 @@ class _ConsultationRecordScreenState extends State<ConsultationRecordScreen> {
           ),
         ),
       TreatmentNotesSection(appointmentId: r.appointmentId),
+      if (r.outcomeApproved) RatingSection(appointmentId: r.appointmentId),
     ];
   }
 }

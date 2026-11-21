@@ -6,11 +6,15 @@ import '../../core/catalog.dart';
 import '../../core/formatting.dart';
 import '../../core/widgets.dart';
 import '../booking/booking_screen.dart';
+import '../ratings/rating.dart';
+import '../ratings/ratings_repository.dart';
+import '../ratings/star_rating.dart';
 import 'vet_card.dart';
 import 'vet_summary.dart';
 import 'vets_repository.dart';
 
 /// US-10: credentials, license status, specialties, animal types, languages, rating (when any) and Book.
+/// US-38: the average rating with the number of ratings, and owners' comments with their first name only.
 class VetProfileScreen extends StatelessWidget {
   const VetProfileScreen({super.key, required this.vetId});
 
@@ -51,6 +55,8 @@ class VetProfileScreen extends StatelessWidget {
                           const Icon(Icons.star_rounded, color: Palette.accent, size: 22),
                           const SizedBox(width: 4),
                           Text(v.rating!.toStringAsFixed(1), style: text.titleMedium!.copyWith(color: Palette.accentDeep)),
+                          const SizedBox(width: 6),
+                          Text('(${ratingCountLabel(v.ratingCount)})', style: text.bodyMedium!.copyWith(color: Palette.muted)),
                         ]),
                       ],
                       const SizedBox(height: 14),
@@ -77,6 +83,7 @@ class VetProfileScreen extends StatelessWidget {
                     const SectionTitle('نبذة'),
                     AppCard(child: Text(v.bio!, style: text.bodyLarge)),
                   ],
+                  if (v.ratingCount > 0) _Reviews(vetId: v.id),
                 ]),
               ),
               BottomActionBar(children: [
@@ -89,6 +96,39 @@ class VetProfileScreen extends StatelessWidget {
             ]);
           },
         ),
+      );
+}
+
+/// US-38: owners' comments, newest first, with the owner's first name only. Nothing shows when there are none.
+class _Reviews extends StatelessWidget {
+  const _Reviews({required this.vetId});
+
+  final String vetId;
+
+  @override
+  Widget build(BuildContext context) => FutureBuilder<List<VetReview>>(
+        future: RatingsRepository().reviews(vetId),
+        builder: (context, snap) {
+          final reviews = snap.data ?? const <VetReview>[];
+          if (reviews.isEmpty) return const SizedBox.shrink();
+          final text = Theme.of(context).textTheme;
+          return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            const SectionTitle('آراء المالكين'),
+            for (final r in reviews)
+              AppCard(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(children: [
+                    Expanded(child: Text(r.ownerFirstName, style: text.titleSmall)),
+                    StarRow(r.stars, size: 16),
+                  ]),
+                  const SizedBox(height: 6),
+                  Text(r.comment, style: text.bodyMedium),
+                  const SizedBox(height: 4),
+                  Text(formatDay(r.ratedAt), style: text.bodySmall),
+                ]),
+              ),
+          ]);
+        },
       );
 }
 

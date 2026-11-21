@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../core/formatting.dart';
 import '../../core/widgets.dart';
+import '../ratings/rating_section.dart';
 import '../treatment_notes/treatment_notes_section.dart';
 import 'outcome.dart';
 import 'outcomes_repository.dart';
 import 'referral_card.dart';
 
-/// US-16: read-only consultation outcome for the owner, with the veterinarian's treatment notes (US-37).
+/// US-16: read-only consultation outcome for the owner, with the veterinarian's treatment notes (US-37) and the
+/// owner's rating of the consultation (US-38).
 class OutcomeViewScreen extends StatelessWidget {
   const OutcomeViewScreen({super.key, required this.appointmentId});
 
@@ -64,6 +66,7 @@ class OutcomeViewScreen extends StatelessWidget {
                 ),
               for (final r in referrals) ReferralCard(referral: r),
               TreatmentNotesSection(appointmentId: appointmentId),
+              RatingSection(appointmentId: appointmentId),
             ]);
           },
         ),
