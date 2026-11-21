@@ -1,6 +1,7 @@
 import '../features/cases/cases_feature.dart';
 import '../features/history/history_feature.dart';
 import '../features/outcome_editor/outcome_editor_feature.dart';
+import '../features/ratings/ratings_feature.dart';
 import '../features/vets/vets_feature.dart';
 import 'feature.dart';
 
@@ -10,4 +11,5 @@ final part3Features = <Feature>[
   vetsFeature,
   outcomeEditorFeature,
   historyFeature,
+  ratingsFeature,
 ];
