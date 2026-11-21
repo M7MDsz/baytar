@@ -7,8 +7,8 @@
 
 create table public.treatment_notes (
   id uuid primary key default gen_random_uuid(),
-  appointment_id uuid not null references public.appointments (id),
-  case_id uuid not null references public.cases (id),
+  appointment_id uuid not null references public.appointments (id) on delete cascade,
+  case_id uuid not null references public.cases (id) on delete cascade,
   vet_id uuid not null references public.vet_profiles (id),
   vet_name text not null,
   license_number text not null,
@@ -22,7 +22,7 @@ create table public.treatment_notes (
 create index treatment_notes_appointment on public.treatment_notes (appointment_id, issued_at);
 
 create table public.treatment_note_medicines (
-  note_id uuid not null references public.treatment_notes (id),
+  note_id uuid not null references public.treatment_notes (id) on delete cascade,
   position smallint not null check (position between 1 and 20),
   name text not null check (btrim(name) <> '' and char_length(name) <= 120),
   dose text not null check (btrim(dose) <> '' and char_length(dose) <= 120),
@@ -45,10 +45,14 @@ create policy treatment_note_medicines_party_select on public.treatment_note_med
 
 revoke insert, update, delete on public.treatment_notes, public.treatment_note_medicines from anon, authenticated;
 
--- An issued note is final, for everyone (the database's own functions included).
+-- An issued note is final: nobody can change it. Only server maintenance (the service role, or the database owner when
+-- a whole rehearsal consultation is removed by the class-demo reset) can delete it, together with its consultation.
 create function public.refuse_note_change() returns trigger
 language plpgsql as $$
 begin
+  if tg_op = 'DELETE' and current_user in ('service_role', 'postgres', 'supabase_admin') then
+    return old;
+  end if;
   raise exception 'note_is_final';
 end;
 $$;
