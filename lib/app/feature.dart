@@ -3,6 +3,16 @@ import 'package:go_router/go_router.dart';
 
 import '../core/session.dart';
 
+/// A section a part adds to one consultation's owner pages: the outcome (US-16) and the past consultation record
+/// (US-23). Sections show in [order] under the page's own content; each loads its own data and shows nothing when it
+/// has nothing to show. Sprint 3: treatment notes (US-37) and the rating (US-38).
+class ConsultationSection {
+  const ConsultationSection({required this.order, required this.builder});
+
+  final int order;
+  final Widget Function(BuildContext context, String appointmentId) builder;
+}
+
 /// A bottom-navigation tab. The first tab (lowest [order]) for a role is that role's start page.
 class HomeTab {
   const HomeTab({
@@ -30,6 +40,7 @@ class Feature {
     this.publicPaths = const [],
     this.roleGuards = const {},
     this.onSignedIn,
+    this.consultationSections = const [],
   });
 
   /// Full-screen pages opened from tabs with `context.push`.
@@ -43,4 +54,7 @@ class Feature {
   final Map<String, Set<UserRole>> roleGuards;
 
   final SignedInHook? onSignedIn;
+
+  /// Sections for the owner's outcome and consultation record pages.
+  final List<ConsultationSection> consultationSections;
 }
