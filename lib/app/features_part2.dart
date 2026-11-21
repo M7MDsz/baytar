@@ -1,3 +1,4 @@
+import '../features/admin_dashboard/admin_dashboard_feature.dart';
 import '../features/auth/auth_feature.dart';
 import '../features/booking/booking_feature.dart';
 import '../features/notifications/notifications_feature.dart';
@@ -12,4 +13,5 @@ final part2Features = <Feature>[
   slotsFeature,
   bookingFeature,
   vetConsultationFeature,
+  adminDashboardFeature,
 ];
