@@ -33,9 +33,12 @@ void main() {
       expect(SummaryStatus.parse(null), SummaryStatus.none);
     });
 
-    test('only a generated or accepted summary has content, and only a generated one can be reviewed', () {
-      expect(SummaryStatus.values.where((s) => s.hasContent), [SummaryStatus.generated, SummaryStatus.accepted]);
-      expect(SummaryStatus.values.where((s) => s.awaitingReview), [SummaryStatus.generated]);
+    // US-26 (Sprint 3) added the edited state: it has content and can still be reviewed.
+    test('only a generated, edited or accepted summary has content, and only a generated or edited one can be reviewed',
+        () {
+      expect(SummaryStatus.values.where((s) => s.hasContent),
+          [SummaryStatus.generated, SummaryStatus.edited, SummaryStatus.accepted]);
+      expect(SummaryStatus.values.where((s) => s.awaitingReview), [SummaryStatus.generated, SummaryStatus.edited]);
       expect(SummaryStatus.disregarded.hasContent, isFalse);
     });
   });

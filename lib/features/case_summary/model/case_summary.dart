@@ -8,6 +8,9 @@ enum SummaryStatus {
   none,
   pending,
   generated,
+
+  /// US-26: the veterinarian edited the generated summary; it still waits for Accept or Disregard.
+  edited,
   notGenerated,
   failed,
   accepted,
@@ -17,6 +20,7 @@ enum SummaryStatus {
   static SummaryStatus parse(Object? raw) => switch (raw) {
         'pending' => pending,
         'generated' => generated,
+        'edited' => edited,
         'not_generated' => notGenerated,
         'failed' => failed,
         'accepted' => accepted,
@@ -24,11 +28,13 @@ enum SummaryStatus {
         _ => none,
       };
 
-  /// Content exists (and may be shown) only while the summary is generated or accepted, never once disregarded.
-  bool get hasContent => this == generated || this == accepted;
+  /// Content exists (and may be shown) only while the summary is generated, edited or accepted, never once
+  /// disregarded.
+  bool get hasContent => this == generated || this == edited || this == accepted;
 
-  /// A generated summary waits for the veterinarian to accept or disregard it, once.
-  bool get awaitingReview => this == generated;
+  /// A generated or edited summary waits for the veterinarian to accept or disregard it, once. Until then it can be
+  /// edited (US-26).
+  bool get awaitingReview => this == generated || this == edited;
 
   bool get reviewed => this == accepted || this == disregarded;
 }
@@ -53,6 +59,8 @@ class SummaryItem {
       quote: quote is String && quote.trim().isNotEmpty ? quote.trim() : null,
     );
   }
+
+  Map<String, dynamic> toJson() => {'value': value, 'quote': quote};
 }
 
 /// `summary_content`: the owner's description organised by the AI. Advisory, never a diagnosis.
@@ -67,6 +75,15 @@ class SummaryContent {
 
   bool get isEmpty =>
       chiefComplaint == null && duration == null && onset == null && affectedArea == null && symptoms.isEmpty;
+
+  /// The JSON the database stores (`edit_summary` takes the same shape). Absent fields are left out.
+  Map<String, dynamic> toJson() => {
+        if (chiefComplaint != null) 'chief_complaint': chiefComplaint!.toJson(),
+        if (duration != null) 'duration': duration!.toJson(),
+        if (onset != null) 'onset': onset!.toJson(),
+        if (affectedArea != null) 'affected_area': affectedArea!.toJson(),
+        if (symptoms.isNotEmpty) 'symptoms': [for (final s in symptoms) s.toJson()],
+      };
 
   /// Null when [raw] is not a JSON object (pending, failed and disregarded summaries have no content).
   static SummaryContent? fromJson(Object? raw) {
