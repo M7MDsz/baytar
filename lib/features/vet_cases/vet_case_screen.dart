@@ -16,6 +16,7 @@ import '../cases/case_record.dart';
 import '../consultation/join_window.dart';
 import '../outcomes/outcome.dart';
 import '../outcomes/referral_card.dart';
+import '../treatment_notes/treatment_notes_section.dart';
 import '../vet_appointments/vet_appointments_screen.dart';
 import '../vet_consultation/vet_consultation_screen.dart';
 
@@ -31,7 +32,8 @@ class _VetCase {
 
 /// US-17: an assigned case with the animal, the owner's text or voice description and every attachment, and
 /// (US-25, US-27, US-28) the AI summary of that description (US-24) to compare, accept or disregard.
-/// From here the veterinarian can request information (US-18) or refer the case (US-21).
+/// From here the veterinarian can request information (US-18) or refer the case (US-21), and after the consultation
+/// issue treatment notes (US-37).
 class VetCaseScreen extends StatefulWidget {
   const VetCaseScreen({super.key, required this.caseId});
 
@@ -148,6 +150,10 @@ class _VetCaseScreenState extends State<VetCaseScreen> {
                   icon: const Icon(Icons.edit_note_rounded),
                   label: const Text('توثيق نتيجة الاستشارة'),
                 ),
+              if (appt != null && appt['started_at'] != null) ...[
+                TreatmentNotesSection(appointmentId: appt['id'] as String, caseId: c.id),
+                const SizedBox(height: 16),
+              ],
               const SizedBox(height: 8),
               OutlinedButton.icon(onPressed: _requestInfo, icon: const Icon(Icons.help_outline), label: const Text('طلب معلومات إضافية')),
               const SizedBox(height: 8),
