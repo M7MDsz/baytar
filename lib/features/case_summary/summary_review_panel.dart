@@ -9,7 +9,6 @@ import '../voice/model/transcript_label.dart';
 import '../voice/voice_note.dart';
 import '../voice/voice_player.dart';
 import 'model/case_summary.dart';
-import 'summary_editor_screen.dart';
 import 'summary_review.dart';
 import 'summary_review_repository.dart';
 
@@ -19,7 +18,6 @@ typedef SummaryBuilder = Widget Function(SummaryContent? content, SummaryStatus 
 /// US-25 Compare, US-27 Accept, US-28 Disregard: on the veterinarian's case, the owner's original description
 /// (with the recording and its labelled transcript) stays on top and is never hidden or replaced; the AI summary sits
 /// under it, with Accept and Disregard (each confirmed in a bottom sheet) and then who decided and when.
-/// US-26: before deciding, the veterinarian can edit the summary; who edited it and when is shown under it.
 class SummaryReviewPanel extends StatefulWidget {
   const SummaryReviewPanel({
     super.key,
@@ -97,16 +95,6 @@ class _SummaryReviewPanelState extends State<SummaryReviewPanel> {
     }
   }
 
-  /// US-26: edit the latest version, then show what is stored.
-  Future<void> _edit() async {
-    final content = _data?.content;
-    if (content == null) return;
-    final saved = await editSummary(context, caseId: widget.caseId, content: content);
-    if (!saved || !mounted) return;
-    showSnack(context, 'تم حفظ تعديل الملخص.');
-    await _load();
-  }
-
   @override
   void dispose() {
     _poll?.cancel();
@@ -151,26 +139,12 @@ class _SummaryReviewPanelState extends State<SummaryReviewPanel> {
 
   Widget _decision(BuildContext context, VetCaseSummary? d) {
     if (d == null) return const SizedBox(width: double.infinity);
-    final edit = editCaption(d.editorName, d.editedAt);
-    final editNote = edit == null || !d.status.hasContent ? null : _EditNote(caption: edit);
     final caption = reviewCaption(d.status, d.reviewerName, d.reviewedAt);
-    if (caption != null) {
-      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        ?editNote,
-        _DecisionBanner(accepted: d.status == SummaryStatus.accepted, caption: caption),
-      ]);
-    }
+    if (caption != null) return _DecisionBanner(accepted: d.status == SummaryStatus.accepted, caption: caption);
     if (!d.status.awaitingReview) return const SizedBox(width: double.infinity);
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        ?editNote,
-        OutlinedButton.icon(
-          onPressed: _busy ? null : _edit,
-          icon: const Icon(Icons.edit_outlined),
-          label: Text(d.edited ? 'تعديل الملخص مرة أخرى' : 'تعديل الملخص'),
-        ),
-        const SizedBox(height: 10),
         SummaryDecisionButtons(
           busy: _busy,
           onAccept: () => _review(ReviewAction.accept),
@@ -234,23 +208,6 @@ class _OriginalCard extends StatelessWidget {
       ]),
     );
   }
-}
-
-/// US-26: «عدّله د. سارة · 12 نوفمبر 9:40 م · الأصل من الذكاء الاصطناعي».
-class _EditNote extends StatelessWidget {
-  const _EditNote({required this.caption});
-
-  final String caption;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(top: 8, bottom: 2),
-        child: Row(children: [
-          const Icon(Icons.edit_rounded, size: 16, color: Palette.juniper),
-          const SizedBox(width: 6),
-          Expanded(child: Text(caption, style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Palette.body))),
-        ]),
-      );
 }
 
 /// «قبله د. سارة · 2 نوفمبر 9:40 م», with a check that pops in when the decision is made.
